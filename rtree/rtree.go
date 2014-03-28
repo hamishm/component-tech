@@ -1,6 +1,7 @@
-package component_tech
+package rtree
 
 import (
+    "fmt"
     "math"
     "sort"
 )
@@ -108,7 +109,7 @@ type RTreeNode struct {
 }
 
 type RTree struct {
-    root     RTreeNode
+    root     *RTreeNode
     maxNodes int
     minFill  int
 }
@@ -130,13 +131,14 @@ func (node *RTreeNode) AddChild(child *RTreeNode) {
     assert(n < cap(node.children), "extending full children array")
     node.children = node.children[:n + 1]
     node.children[n] = child
+    child.parent = node
 }
 
 /*
  * Starting at node 'root', finds the best node at which to insert
  * 'node' and returns it.
  */
-func (root *RTreeNode) ChooseInsertionPoint(node *RTreeNode) *RTreeNode {
+func (node *RTreeNode) ChooseInsertionPoint(newNode *RTreeNode) *RTreeNode {
     for {
         if node.leaf {
             return node
@@ -152,7 +154,7 @@ func (root *RTreeNode) ChooseInsertionPoint(node *RTreeNode) *RTreeNode {
         // same, the smaller of the resulting areas.
         for _, child := range node.children {
             area := child.bounds.Area()
-            containingBox := node.bounds.Union(&child.bounds)
+            containingBox := newNode.bounds.Union(&child.bounds)
             containingArea := containingBox.Area()
             enlargement := containingArea - area
 
@@ -224,7 +226,6 @@ func (node *RTreeNode) SortOnSplitAxis(minFill int) {
 func (node *RTreeNode) ChooseSplitPoint(minFill int) int {
     minOverlap := float32(math.Inf(1))
     minArea := float32(math.Inf(1))
-
     point := -1
 
     for i := minFill; i < len(node.children)-minFill; i++ {
@@ -250,14 +251,20 @@ func (node *RTreeNode) Split(minFill, maxNodes int) *RTreeNode {
 
     newNode := newRTreeNode(maxNodes)
     newNode.leaf = node.leaf
-    newNode.parent = node.parent
+    //newNode.children = newNode.children[:len(node.children) - splitPoint]
 
-    for i := 0; i < splitPoint; i++ {
-        newNode.children[i] = node.children[i]
+    for i := splitPoint; i < len(node.children); i++ {
+        newNode.AddChild(node.children[i])
+        //newNode.children[j] = node.children[i]
+        //newNode.children[j].parent 
         node.children[i] = nil
     }
 
     node.children = node.children[:splitPoint]
+
+    node.bounds = MinBounds(node.children)
+    newNode.bounds = MinBounds(newNode.children)
+
     return newNode
 }
 
@@ -275,22 +282,15 @@ func (rtree *RTree) Insert(value interface{}, bounds Rect) {
     for len(currentNode.children) > rtree.maxNodes {
         splitNode := currentNode.Split(rtree.minFill, rtree.maxNodes)
 
-        // Update bounds of new split nodes
-        currentNode.bounds = MinBounds(currentNode.children)
-        splitNode.bounds = MinBounds(splitNode.children)
-
-
         if currentNode.parent != nil {
             currentNode.parent.AddChild(splitNode)
             currentNode = currentNode.parent
         } else {
-            newRoot := newRTreeNode(rtree.maxNodes)
-            newRoot.leaf = false
-            newRoot.AddChild(currentNode)
-            newRoot.AddChild(splitNode)
-            currentNode.parent = newRoot
-            splitNode.parent = newRoot
-            currentNode = newRoot
+            rtree.root = newRTreeNode(rtree.maxNodes)
+            rtree.root.leaf = false
+            rtree.root.AddChild(currentNode)
+            rtree.root.AddChild(splitNode)
+            currentNode = rtree.root
             assert(len(currentNode.children) <= rtree.maxNodes, "oops")
         }
     }
@@ -302,6 +302,8 @@ func (rtree *RTree) Insert(value interface{}, bounds Rect) {
         currentNode.bounds = MinBounds(currentNode.children)
         currentNode = currentNode.parent
     }
+
+    fmt.Println(rtree.root)
 }
 
 /* Public interface */
@@ -310,7 +312,7 @@ func NewRTree(maxNodes, minFill int) *RTree {
     root := newRTreeNode(maxNodes)
 
     return &RTree{
-        root:     *root,
+        root:     root,
         maxNodes: maxNodes,
         minFill:  minFill,
     }
@@ -331,5 +333,21 @@ func (rtree *RTree) Visit(x, y float32, cb func(value interface{}, bounds Rect))
         }
     }
 
-    recurse(&rtree.root)
+    recurse(rtree.root)
+}
+
+func (rtree *RTree) VisitAll(cb func(value interface{}, bounds Rect)) {
+    var recurse func(node *RTreeNode)
+
+    recurse = func(node *RTreeNode) {
+        for _, child := range node.children {
+            if node.leaf {
+                cb(child.value, child.bounds)
+            } else {
+                recurse(child)
+            }
+        }
+    }
+
+    recurse(rtree.root)    
 }
