@@ -95,7 +95,7 @@ func MinBoundingBox(nodes []*RTreeNode) Rect {
 type RTreeNode struct {
     Children    []*RTreeNode
     BoundingBox Rect
-    Value       *interface{}
+    Value       interface{}
 
     parent         *RTreeNode
     parentOfLeaves bool
@@ -112,12 +112,19 @@ type RTree struct {
 
 func newRTreeNode(numNodes int) *RTreeNode {
     return &RTreeNode{
-        Children:       make([]*RTreeNode, 0, numNodes),
+        Children:       make([]*RTreeNode, 0, numNodes + 1),
         BoundingBox:    Rect{0.0, 0.0, 0.0, 0.0},
         Value:          nil,
         parent:         nil,
         parentOfLeaves: true,
     }
+}
+
+func (node *RTreeNode) AddChild(node *RTreeNode) {
+    n := len(node.Children)
+    assert(n < cap(node.Children), "extending full children array")
+    node.Children = node.Children[:n + 1]
+    node.Children[n] = node
 }
 
 /*
@@ -168,9 +175,8 @@ func (a *ByTop) Len() int           { return len(a) }
 func (a *ByTop) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a *ByTop) Less(i, j int) bool { return a[i].BoundingBox.Top < a[j].BoundingBox.Top }
 
-func (node *RTreeNode) TotalPerimeter(minFill, maxNodes int) float32 {
+func (node *RTreeNode) TotalPerimeter(minFill int) float32 {
     count := len(node.Children)
-    assert(count == maxNodes+1, "should be splitting a max + 1 length node")
 
     lowerRect := MinBoundingBox(node.Children[:minFill])
     upperBegin := count - minFill
@@ -194,12 +200,14 @@ func (node *RTreeNode) TotalPerimeter(minFill, maxNodes int) float32 {
     return perimeter
 }
 
-func (node *RTreeNode) SortOnSplitAxis(minFill, maxNodes int) {
+func (node *RTreeNode) SortOnSplitAxis(minFill int) {
     sort.Sort(ByLeft(node.Children))
-    xPerim := node.TotalPerimeter(minFill, maxNodes)
+    xPerim := node.TotalPerimeter(minFill)
 
     sort.Sort(ByTop(node.Children))
-    yPerim := node.TotalPerimeter(minFill, maxNodes)
+    yPerim := node.TotalPerimeter(minFill)
+
+    // Also sort by bottom and right?
 
     if xPerim < yPerim {
         sort.Sort(ByLeft(node.Children))
@@ -208,7 +216,7 @@ func (node *RTreeNode) SortOnSplitAxis(minFill, maxNodes int) {
     }
 }
 
-func (node *RTreeNode) ChooseSplitPoint(minFill, maxNodes int) int {
+func (node *RTreeNode) ChooseSplitPoint(minFill int) int {
     minOverlap := math.Inf(1)
     minArea := math.Inf(1)
 
@@ -248,6 +256,31 @@ func (node *RTreeNode) Split(minFill, maxNodes int) *RTreeNode {
     return newNode
 }
 
+func (rtree *RTree) Insert(value interface{}, boundingBox Rect) {
+    newNode := newRTreeNode(rtree.maxNodes)
+    newNode.Value = value
+    newNode.parentOfLeaves = false
+
+    insertionNode := rtree.Root.ChooseInsertionPoint()
+    insertionNode.AddChild(newNode)
+
+    currentNode := insertionNode
+
+    for len(currentNode.Children) > rtree.maxNodes {
+        splitNode := currentNode.Split(rtree.minFill)
+
+        if currentNode.parent != nil {
+            currentNode.parent.AddChild(splitNode)
+            currentNode := currentNode.parent
+        } else {
+            newRoot := newRTreeNode(rtree.maxNodes)
+            newRoot.parentOfLeaves = false
+            newRoot.AddChild(currentNode)
+            newRoot.AddChild(splitNode)
+        }
+    }
+}
+
 /* Public interface */
 
 func New(maxNodes int, minFill int) *RTree {
@@ -256,7 +289,7 @@ func New(maxNodes int, minFill int) *RTree {
     return &RTree{
         Root:     root,
         maxNodes: maxNodes,
-        minFill:  mintFill,
+        minFill:  minFill,
     }
 }
 
