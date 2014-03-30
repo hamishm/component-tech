@@ -1,7 +1,7 @@
 {
    "endpoints":[
       {
-         "name":"Zoo",
+         "name":"Broker",
          "methods":[
             {
                "MethodName":"SensorData",
