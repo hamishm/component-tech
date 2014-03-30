@@ -1,90 +1,126 @@
 {
-   "endpoints":[
-      {
-         "name":"Broker",
-         "methods":[
-            {
-               "MethodName":"SensorData",
-               "Synopsis":"Returns all available test data ",
-               "HTTPMethod":"GET",
-               "URI":"/sensordata",
-               "RequiresOAuth":"Y",
-               "parameters":[],
-               "responseBodyJsonSchema": {
-                    "type": "object",
-                    "properties": {
-                        "errors":{"extends": "Errors"},
-                        "meta": {"extends": "Meta"},
-                        "data": {
-                            "type": "object",
-                            "properties": {
-                                "sensordata": {
-                                    "type": "array",
-                                    "items": [
-                                        {"extends": "SensorData"},
-                                        {"extends": "SensorData"},
-                                        {"extends": "SensorData"}
-                                    ]
-                                }
-                            }
-                        }
-                    }   
-                }
-            },
-            {
-               "MethodName":"SensorData",
-               "Synopsis":"Add a new result to the database ",
-               "HTTPMethod":"POST",
-               "URI":"/sensordata",
-               "RequiresOAuth":"Y",
-               "parameters":[],
-               "requestBodyJsonSchema": {
-                    "extends": "SensorData"
-                },
-               "responseBodyJsonSchema": {
-                    "type": "object",
-                    "properties": {
-                        "errors":{"extends": "Errors"},
-                        "meta": {"extends": "Meta"},
-                        "data": {
-                            "type": "object",
-                            "properties": {
-                                "sensordata": {
-                                    "type": "array",
-                                    "items": [
-                                        {"extends": "SensorData"},
-                                        {"extends": "SensorData"},
-                                        {"extends": "SensorData"}
-                                    ]
-                                }
-                            }
-                        }
-                    }   
-                }
-            }
-         ]
-      }
-   ],
-   "jsonSchemas": [
+  "endpoints": [
+    {
+      "name": "Broker",
+      "methods": [
         {
-            "name":"SensorData",
-            "description": "This is sensor data",
+          "MethodName": "SensorData",
+          "Synopsis": "Returns all available test data ",
+          "HTTPMethod": "GET",
+          "URI": "/sensordata",
+          "RequiresOAuth": "Y",
+          "parameters": [],
+          "responseBodyJsonSchema": {
             "type": "object",
             "properties": {
-                "date":{"type": "string", "format": "date-time"},
-                "coordinates": {
-                "description": "Coordinates schema is referenced, this seems to be the right way to do it",
-                "$ref": "http://json-schema.org/geo"
-                },
-                "data": {"extends": "Data"}
-            }   
-        }, {
-            "name":"Data",
-            "description": "Here we define the actual data",
+              "errors": {
+                "extends": "Errors"
+              },
+              "meta": {
+                "extends": "Meta"
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "sensordata": {
+                    "type": "array",
+                    "items": [
+                      {
+                        "extends": "SensorData"
+                      },
+                      {
+                        "extends": "SensorData"
+                      },
+                      {
+                        "extends": "SensorData"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "MethodName": "SensorData",
+          "Synopsis": "Add a new result to the database ",
+          "HTTPMethod": "POST",
+          "URI": "/sensordata",
+          "RequiresOAuth": "Y",
+          "parameters": [],
+          "requestBodyJsonSchema": {
+            "extends": "SensorData"
+          },
+          "responseBodyJsonSchema": {
             "type": "object",
             "properties": {
-                "contents":{"type": "string"}
-            }   
+              "errors": {
+                "extends": "Errors"
+              },
+              "meta": {
+                "extends": "Meta"
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "sensordata": {
+                    "type": "array",
+                    "items": [
+                      {
+                        "extends": "SensorData"
+                      },
+                      {
+                        "extends": "SensorData"
+                      },
+                      {
+                        "extends": "SensorData"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
         }
-    ]
+      ]
+    }
+  ],
+  "jsonSchemas": [
+    {
+      "name": "SensorData",
+      "description": "This is sensor data",
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "location": {
+          "description": "A geographical coordinate",
+          "type": "object",
+          "properties": {
+            "latitude": {
+              "type": "number"
+            },
+            "longitude": {
+              "type": "number"
+            }
+          }
+        },
+        "data": {
+          "extends": "Data"
+        }
+      }
+    },
+    {
+      "name": "Data",
+      "description": "Here we define the actual data",
+      "type": "object",
+      "properties": {
+        "contents": {
+          "type": "string"
+        }
+      }
+    }
+  ]
 }
