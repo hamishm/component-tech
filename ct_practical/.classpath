@@ -7,7 +7,6 @@
 	<classpathentry kind="lib" path="libs/httpcore-4.3.2.jar"/>
 	<classpathentry kind="lib" path="libs/json-simple-1.1.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="C:/Users/MarcLaptop/Documents/Code/ct_practical/libs/joda-time-2.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/MarcLaptop/Documents/Code/ct_practical/libs/joda-time-2.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/MarcLaptop/Documents/College/3rd/CT/practical1/component-tech/ct_practical/libs/joda-time-2.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
