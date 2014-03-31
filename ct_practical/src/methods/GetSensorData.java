@@ -11,6 +11,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONObject;
@@ -22,14 +23,22 @@ public class GetSensorData {
 	private final String HttpMethod = "POST";
 	private final String path = "/consume";
 	
-	private final String host;
-	private final String sessionId;
+	private String host;
+	private String sessionId;
 	
 	Response response = null;
 	
 	public GetSensorData(String host, String sessionId){
 		this.host = host;
 		this.sessionId = sessionId;
+	}
+	
+	public void setHost(String hosturl){
+		this.host = hosturl;
+	}
+	
+	public void setSessionId(String id){
+		this.sessionId = id;
 	}
 	
 	/**
@@ -43,8 +52,7 @@ public class GetSensorData {
 		URI uri = new URIBuilder()
 				.setScheme("http")
 				.setHost(host)
-				.setPath(path)
-				.setParameter("id", sessionId)
+				.setPath(path+"/"+sessionId)
 				.build();
 		
 		System.out.println("Calling: " + uri);
@@ -55,8 +63,8 @@ public class GetSensorData {
 
 		httppost.addHeader("Accept", "application/json");
 		httppost.addHeader("Accept-Charset", "utf-8");
-		httppost.addHeader("Content-Length", "0");
-
+		httppost.addHeader("Content-Length", "0");	
+		
 		HttpResponse response = httpclient.execute(httppost);
 		if(response.getStatusLine().getStatusCode() != 200){
 			System.err.println("Error response code:");

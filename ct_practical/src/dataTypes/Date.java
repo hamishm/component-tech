@@ -14,6 +14,11 @@ public class Date implements JsonObject {
 	DateTimeZone z;
 	DateTimeFormatter fmt;
 	
+	public Date(DateTime dt) {
+		this.dt = dt;
+		this.z = dt.getZone();
+	}
+	
 	public Date(String dateS) {
 		fromString(dateS);
 	}
