@@ -2,9 +2,6 @@ package tests.dataTypes;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.TimeZone;
-
-import org.joda.time.DateTime;
 import org.json.simple.JSONObject;
 import org.junit.Test;
 

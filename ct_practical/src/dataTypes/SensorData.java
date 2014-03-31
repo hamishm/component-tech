@@ -1,7 +1,5 @@
 package dataTypes;
 
-import java.util.ArrayList;
-
 import org.json.simple.JSONObject;
 
 import core.JsonObject;

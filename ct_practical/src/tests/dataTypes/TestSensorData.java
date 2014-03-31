@@ -1,12 +1,10 @@
 package tests.dataTypes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 import org.junit.Test;
-import org.junit.Assert.*;
 
 import dataTypes.Data;
 import dataTypes.Location;

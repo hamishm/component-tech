@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import core.JsonObject;
 
@@ -15,6 +16,10 @@ public class Response implements JsonObject{
 	
 	public Response(JSONObject obj) {
 		load(obj);
+	}
+	
+	public Response(String jsonString) {
+		load((JSONObject)JSONValue.parse(jsonString));
 	}
 
 	public ArrayList<SensorData> getData() {

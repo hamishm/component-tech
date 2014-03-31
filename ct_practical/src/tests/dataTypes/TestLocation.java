@@ -1,6 +1,6 @@
 package tests.dataTypes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.json.simple.JSONObject;
 import org.junit.Test;

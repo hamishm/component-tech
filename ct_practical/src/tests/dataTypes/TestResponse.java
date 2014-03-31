@@ -1,10 +1,9 @@
 package tests.dataTypes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.junit.Test;
 
 import dataTypes.Data;
@@ -17,8 +16,8 @@ public class TestResponse {
 
 	@Test
 	public void testToJSON() {
-		SensorData d1 = getSensorData();
-		SensorData d2 = getSensorData();
+		SensorData d1 = TestUtils.getSensorData();
+		SensorData d2 = TestUtils.getSensorData();
 		JSONObject obj = new JSONObject();
 		obj.put("errors", null);
 		obj.put("meta", null);
@@ -32,8 +31,8 @@ public class TestResponse {
 	
 	@Test
 	public void testFromJSON() {
-		SensorData d1 = getSensorData();
-		SensorData d2 = getSensorData();
+		SensorData d1 = TestUtils.getSensorData();
+		SensorData d2 = TestUtils.getSensorData();
 		JSONObject obj = new JSONObject();
 		obj.put("errors", null);
 		obj.put("meta", null);
@@ -44,30 +43,9 @@ public class TestResponse {
 		Response r = new Response(obj);
 		assertTrue(r.getError().getValue() == null);
 		assertTrue(r.getData().size() == 2);
-		assertTrue(r.getData().get(0).getLocation().getLatitude() == getLocation().getLatitude());
+		assertTrue(r.getData().get(0).getLocation().getLatitude() == TestUtils.getLocation().getLatitude());
 	}
 	
-	private SensorData getSensorData(){
-		SensorData sd = new SensorData(getDate(), getLocation(), getData());
-		return sd;
-	}
-	
-	private Location getLocation(){
-		final double lati = 123.12;
-		final double longi = 456.6;
-		Location loc = new Location(lati,longi);
-		return loc;
-	}
-	
-	private Date getDate(){
-		String dateS = "2003-01-1712:12:12.342-0800";
-		Date d = new Date(dateS);
-		return d;
-	}
-	
-	private Data getData(){
-		Data d = new Data("ExampleDataString");
-		return d;
-	}
+
 }
 
