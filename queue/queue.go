@@ -36,9 +36,11 @@ func (q *ListQueue) Poll() []interface{} {
     ret := make([]interface{}, q.Items.Len())
 
     i := 0
-    for e := q.Items.Front(); e != nil; e = e.Next() {
-        ret[i] = e
-        q.Items.Remove(e)
+    for e := q.Items.Front(); e != nil; {
+        ret[i] = e.Value
+        prev := e
+        e = prev.Next()
+        q.Items.Remove(prev)
         i++
     }
     return ret
