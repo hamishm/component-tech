@@ -1,6 +1,7 @@
-package rtree
+package rtree_test
 
 import (
+    "component-tech/rtree"
     "math/rand"
     "testing"
 )
@@ -9,12 +10,12 @@ func randFloat(lower, upper float32) float32 {
     return lower + rand.Float32() * (upper - lower)
 }
 
-func randomRect() Rect {
+func randomRect() rtree.Rect {
     left := randFloat(0.0, 150.0)
     right := randFloat(left + 5.0, 200.0)
     top := randFloat(0.0, 150.0)
     bottom := randFloat(top + 5.0, 200.0)
-    return Rect{
+    return rtree.Rect{
         Left:   left,
         Right:  right,
         Top:    top,
@@ -29,7 +30,7 @@ type Dummy struct {
 
 
 func TestRTree(t *testing.T) {
-    tree := New(10, 4)
+    tree := rtree.New(10, 4)
     for n:= 0; n < 200; n++ {
         bounds := randomRect()
         dummy := &Dummy{A: 1}
@@ -37,7 +38,7 @@ func TestRTree(t *testing.T) {
     }
 
     count := 0
-    tree.VisitAll(func (value interface{}, bounds Rect) {
+    tree.VisitAll(func (value interface{}, bounds rtree.Rect) {
         count++
         //fmt.Println(value.(*Dummy).A)
     })
