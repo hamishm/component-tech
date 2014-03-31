@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.junit.Test;
 
 import dataTypes.Data;
@@ -26,7 +27,7 @@ public class TestResponse {
 		dataArr.add(d2.getJsonObj());
 		obj.put("data",dataArr);
 		Response r = new Response(obj);
-		System.out.println(r.getJsonObj().toJSONString());
+		assertTrue(r.toString().length()>10); //err it works
 	}
 	
 	@Test
