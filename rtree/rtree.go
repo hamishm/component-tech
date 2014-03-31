@@ -256,7 +256,7 @@ func (node *RTreeNode) Split(minFill, maxNodes int) *RTreeNode {
     for i := splitPoint; i < len(node.children); i++ {
         newNode.AddChild(node.children[i])
         //newNode.children[j] = node.children[i]
-        //newNode.children[j].parent 
+        //newNode.children[j].parent
         node.children[i] = nil
     }
 
@@ -308,7 +308,7 @@ func (rtree *RTree) Insert(value interface{}, bounds Rect) {
 
 /* Public interface */
 
-func NewRTree(maxNodes, minFill int) *RTree {
+func New(maxNodes, minFill int) *RTree {
     root := newRTreeNode(maxNodes)
 
     return &RTree{
@@ -349,5 +349,5 @@ func (rtree *RTree) VisitAll(cb func(value interface{}, bounds Rect)) {
         }
     }
 
-    recurse(rtree.root)    
+    recurse(rtree.root)
 }
