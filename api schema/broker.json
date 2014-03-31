@@ -1,8 +1,79 @@
 {
+<<<<<<< HEAD
+   "endpoints":[
+      {
+         "name":"Broker",
+         "methods":[
+            {
+               "MethodName":"SensorData",
+               "Synopsis":"Returns all available test data ",
+               "HTTPMethod":"GET",
+               "URI":"/sensordata",
+               "RequiresOAuth":"Y",
+               "parameters":[
+               ],
+               "responseBodyJsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "errors":{"extends": "Errors"},
+                        "meta": {"extends": "Meta"},
+                        "data": {
+                            "type": "object",
+                            "properties": {
+                                "sensordata": {
+                                    "type": "array",
+                                    "items": [
+                                        {"extends": "SensorData"},
+                                        {"extends": "SensorData"},
+                                        {"extends": "SensorData"}
+                                    ]
+                                }
+                            }
+                        }
+                    }   
+                }
+            },
+            {
+               "MethodName":"SensorData",
+               "Synopsis":"Add a new result to the database ",
+               "HTTPMethod":"POST",
+               "URI":"/sensordata",
+               "RequiresOAuth":"Y",
+               "parameters":[],
+               "requestBodyJsonSchema": {
+                    "extends": "SensorData"
+                },
+               "responseBodyJsonSchema": {
+                    "type": "object",
+                    "properties": {
+                        "errors":{"extends": "Errors"},
+                        "meta": {"extends": "Meta"},
+                        "data": {
+                            "type": "object",
+                            "properties": {
+                                "sensordata": {
+                                    "type": "array",
+                                    "items": [
+                                        {"extends": "SensorData"},
+                                        {"extends": "SensorData"},
+                                        {"extends": "SensorData"}
+                                    ]
+                                }
+                            }
+                        }
+                    }   
+                }
+            }
+         ]
+      }
+   ],
+   "jsonSchemas": [
+=======
   "endpoints": [
     {
       "name": "Broker",
       "methods": [
+>>>>>>> FETCH_HEAD
         {
           "MethodName": "SensorData",
           "Synopsis": "Returns all available test data ",
@@ -14,7 +85,7 @@
             "type": "object",
             "properties": {
               "errors": {
-                "extends": "Errors"
+                "extends": "Error"
               },
               "meta": {
                 "extends": "Meta"
@@ -55,7 +126,7 @@
             "type": "object",
             "properties": {
               "errors": {
-                "extends": "Errors"
+                "extends": "Error"
               },
               "meta": {
                 "extends": "Meta"
