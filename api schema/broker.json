@@ -9,7 +9,8 @@
                "HTTPMethod":"GET",
                "URI":"/sensordata",
                "RequiresOAuth":"Y",
-               "parameters":[],
+               "parameters":[
+               ],
                "responseBodyJsonSchema": {
                     "type": "object",
                     "properties": {
