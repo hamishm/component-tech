@@ -1,10 +1,14 @@
 package rtree_test
 
 import (
+    "fmt"
     "component-tech/rtree"
     "math/rand"
     "testing"
 )
+
+
+const testCount = 200
 
 func randFloat(lower, upper float32) float32 {
     return lower + rand.Float32() * (upper - lower)
@@ -31,8 +35,9 @@ type Dummy struct {
 
 func TestRTree(t *testing.T) {
     tree := rtree.New(10, 4)
-    for n:= 0; n < 200; n++ {
+    for n:= 0; n < testCount; n++ {
         bounds := randomRect()
+        fmt.Println(bounds)
         dummy := &Dummy{A: 1}
         tree.Insert(dummy, bounds)
     }
@@ -43,7 +48,7 @@ func TestRTree(t *testing.T) {
         //fmt.Println(value.(*Dummy).A)
     })
 
-    if count != 200 {
+    if count != testCount {
         t.Error("Failed to visit all nodes")
     }
 }

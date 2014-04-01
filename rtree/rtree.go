@@ -1,7 +1,6 @@
 package rtree
 
 import (
-    "fmt"
     "math"
     "sort"
 )
@@ -86,9 +85,9 @@ func (rect *Rect) IntersectionArea(other *Rect) float32 {
 }
 
 func MinBounds(nodes []*RTreeNode) Rect {
-    rect := Rect{0.0, 0.0, 0.0, 0.0}
+    rect := nodes[0].bounds
 
-    for _, node := range nodes {
+    for _, node := range nodes[1:] {
         rect.Top = Min(rect.Top, node.bounds.Top)
         rect.Left = Min(rect.Left, node.bounds.Left)
         rect.Right = Max(rect.Right, node.bounds.Right)
@@ -302,8 +301,6 @@ func (rtree *RTree) Insert(value interface{}, bounds Rect) {
         currentNode.bounds = MinBounds(currentNode.children)
         currentNode = currentNode.parent
     }
-
-    fmt.Println(rtree.root)
 }
 
 /* Public interface */
