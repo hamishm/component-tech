@@ -1,6 +1,7 @@
 package client;
 
 import methods.GetSensorData;
+import methods.Handshake;
 
 import org.joda.time.DateTime;
 
@@ -19,6 +20,8 @@ public class Consumer extends Client{
 	}
 
 	public void produce() {
+		this.sessionId = Handshake.call(
+				this.brokerUrl, this.getLocation(), 10);
 		handleGetData();
 	}
 

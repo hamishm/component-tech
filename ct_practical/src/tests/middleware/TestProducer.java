@@ -19,4 +19,5 @@ public class TestProducer {
 		System.out.printf("%s versus %s\n",l1,l2);
 		assertFalse(l1.getLatitude() == l2.getLatitude());
 	}
+	
 }

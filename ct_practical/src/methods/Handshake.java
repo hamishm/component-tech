@@ -1,22 +1,14 @@
 package methods;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import core.Network;
-import dataTypes.Response;
+import dataTypes.Location;
 
 /**
  * Consumer calls this the first time it encounters the broker
@@ -29,7 +21,7 @@ public class Handshake {
 	 * @return sessionId issued by the broker or null
 	 * if call failed for any reason
 	 */
-	public static String call(String brokerUrl) {
+	public static String call(String brokerUrl, Location loc, double radius) {
 		URI uri;
 		try {
 			uri = new URIBuilder()
@@ -41,7 +33,10 @@ public class Handshake {
 			System.err.println("MalformedURI: url: " + brokerUrl);
 			return null;
 		}
-		String response = Network.callGet(uri.toString());
+		String payload = "{\"latitude\":" + loc.getLatitude()
+				+",\"longitude\":"+loc.getLongitude()
+				+",\"radius\":"+radius+"}";
+		String response = Network.callPost(uri.toString(), payload);
 		if(response != null){
 			try{
 				JSONObject jsonObj = (JSONObject) JSONValue.parse(response);
