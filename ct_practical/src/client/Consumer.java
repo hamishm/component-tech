@@ -11,18 +11,24 @@ import dataTypes.Response;
 import dataTypes.SensorData;
 
 public class Consumer extends Client{
-	protected final String type = "consumer";
+	private String consumerId = null;
 	
-	private GetSensorData getDataMethod = null;
-
+	Location interestLoc = null;
+	double interestRadius = 10;
+	
 	public Consumer() {
-		getDataMethod = new GetSensorData(brokerUrl, brokerUrl);
 	}
 
 	public void produce() {
-		this.sessionId = Handshake.call(
-				this.brokerUrl, this.getLocation(), 10);
+		if(consumerId == null){
+			consumerId = Handshake.call(
+					this.brokerUrl, this.interestLoc, interestRadius);
+		}		
 		handleGetData();
+	}
+	
+	public String getType(){
+		return "consumer";
 	}
 
 	/**
@@ -31,9 +37,7 @@ public class Consumer extends Client{
 	 */
 	private void handleGetData() {
 		if (brokerUrl != null && sessionId != null) {
-			getDataMethod.setHost(brokerUrl);
-			getDataMethod.setSessionId(sessionId);
-			Response r = getDataMethod.call();
+			Response r = GetSensorData.call(brokerUrl, consumerId);
 			if(r == null){
 				System.err.println("Producer failed to get a response.");
 			}
@@ -44,7 +48,7 @@ public class Consumer extends Client{
 	 * Produces a random location around Fife the first time this method is
 	 * called. Returns same location from then on
 	 * 
-	 * @return
+	 * @return the location of the client
 	 */
 	public Location getLocation() {
 		if (location == null) { // initalizes a random location around Fife

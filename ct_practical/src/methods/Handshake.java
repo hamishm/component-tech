@@ -9,6 +9,7 @@ import org.json.simple.JSONValue;
 
 import core.Network;
 import dataTypes.Location;
+import dataTypes.Response;
 
 /**
  * Consumer calls this the first time it encounters the broker
@@ -36,13 +37,13 @@ public class Handshake {
 		String payload = "{\"latitude\":" + loc.getLatitude()
 				+",\"longitude\":"+loc.getLongitude()
 				+",\"radius\":"+radius+"}";
-		String response = Network.callPost(uri.toString(), payload);
+		Response response = Network.callPost(uri.toString(), payload);
 		if(response != null){
 			try{
-				JSONObject jsonObj = (JSONObject) JSONValue.parse(response);
+				JSONObject jsonObj = (JSONObject) JSONValue.parse(response.body);
 				return (String)jsonObj.get("session_id");
 			} catch (Exception e){
-				System.err.println("Malformed response: " + response);
+				System.err.println("Malformed response in handshake: " + response);
 			}
 		}
 		return null;

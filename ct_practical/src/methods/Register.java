@@ -19,8 +19,8 @@ public class Register {
 		obj.put("type", type);
 		obj.put("location", location.getJsonObj().toJSONString());
 		String jsonPayload = obj.toJSONString();
-		String response = Network.callPost(registryUrl, jsonPayload);
-		return response;		
+		//String response = Network.callPost(registryUrl, jsonPayload);
+		return null;		
 	}
 
 }

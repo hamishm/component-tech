@@ -10,13 +10,6 @@ import dataTypes.Response;
 import dataTypes.SensorData;
 
 public class Producer extends Client {
-	protected String type = "producer";
-	
-	private PostSensorData postDataMethod = null;
-
-	public Producer() {
-		postDataMethod = new PostSensorData(brokerUrl, brokerUrl);
-	}
 
 	public void produce() {
 		handlePostData();
@@ -28,10 +21,8 @@ public class Producer extends Client {
 	 */
 	private void handlePostData() {
 		if (brokerUrl != null && sessionId != null) {
-			postDataMethod.setHost(brokerUrl);	
-			postDataMethod.setSessionId(sessionId);
 			//System.out.println("\t" + getData().getJsonObj().toJSONString());
-			Response response = postDataMethod.call(getData());
+			Response response = PostSensorData.call(brokerUrl, sessionId, getData());
 			if(response != null){
 				// do something
 			} else {
@@ -74,6 +65,10 @@ public class Producer extends Client {
 				getLocation());
 		rand.addData(Math.random());
 		return rand;
+	}
+	
+	public String getType(){
+		return "producer";
 	}
 
 	@Override

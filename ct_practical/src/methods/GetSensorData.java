@@ -21,50 +21,24 @@ import core.Network;
 import dataTypes.Response;
 
 public class GetSensorData {
-	private final String path = "/consume";
-	
-	private String host;
-	private String sessionId;
-	
-	
-	public GetSensorData(String host, String sessionId){
-		this.host = host;
-		this.sessionId = sessionId;
-	}
-	
-	public void setHost(String hosturl){
-		this.host = hosturl;
-	}
-	
-	public void setSessionId(String id){
-		this.sessionId = id;
-	}
 	
 	/**
 	 * Calls this method. Must set correct host and sessionid for
 	 * call to succeed
 	 * @return - Response object of the request or null if request failed
 	 */
-	public Response call() {
+	public static Response call(String hosturl, String id) {
 		URI uri;
 		try {
 			uri = new URIBuilder()
 					.setScheme("http")
-					.setHost(host)
-					.setPath(path+"/"+sessionId)
+					.setHost(hosturl)
+					.setPath("/consume/"+id)
 					.build();
 		} catch (URISyntaxException e) {
-			System.err.println("MalformedURI: host: " + host + " path: " + path);
+			System.err.println("MalformedURI: host: " + hosturl);
 			return null;
 		}
-		String response = Network.callGet(uri.toString());
-		if(response != null){
-			try{
-				return new Response(response);
-			} catch (Exception e){
-				System.err.println("Malformed response: " + response);
-			}
-		}
-		return null;
+		return Network.callGet(uri.toString());
 	}
 }

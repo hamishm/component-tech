@@ -24,10 +24,12 @@ public class Network {
 	 * @param payload - the message that should be sent along with the post request
 	 * @return text body of the response, null if the request failed in anyway
 	 */
-	public static String callPost(String url, String payload) {
+	public static Response callPost(String url, String payload) {
 		// set up request
 		System.out.println(url);
 		System.out.println(payload);
+		
+		Response r = null;
 		
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpPost httppost = new HttpPost(url);
@@ -38,17 +40,13 @@ public class Network {
 		// make request
 		try {
 			HttpResponse response = httpclient.execute(httppost);
-			if (response.getStatusLine().getStatusCode() != 200) {
-				System.err.println("Error response code:");
-				System.err.println(response.getStatusLine().toString());
-				return null;
-			}
+			r = new Response(response.getStatusLine().getStatusCode(), "");
 			HttpEntity rEntity = response.getEntity();
 			if (rEntity != null) {
 				InputStream instream = rEntity.getContent();
 				try {
 					String responseJson = IOUtils.toString(instream, "utf-8");
-					return responseJson;
+					r.body = responseJson;
 				} finally {
 					instream.close();
 				}
@@ -57,43 +55,41 @@ public class Network {
 			System.err.println("Something went wrong during network transaction.");
 			e.printStackTrace();
 		}
-		return null;
+		return r;
 	}
 
 	/**
 	 * Calls a get request using Apache libraries
 	 * 
 	 * @param url - the full url to send to
-	 * @return text body of the response, null if the request failed in anyway
+	 * @return text body of the response, null if the request failed to get a response
 	 */
-	public static String callGet(String url) {
+	public static Response callGet(String url) {
 		System.out.println(url);
+		Response r = null;
+		
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpGet httpget = new HttpGet(url);
 		httpget.addHeader("Accept", "application/json");
 		httpget.addHeader("Accept-Charset", "utf-8");
 		try{
-		HttpResponse response = httpclient.execute(httpget);
-		if (response.getStatusLine().getStatusCode() != 200) {
-			System.err.println("Error response code:");
-			System.err.println(response.getStatusLine().toString());
-			return null;
-		}
-		HttpEntity entity = response.getEntity();
-		if (entity != null) {
-			InputStream instream = entity.getContent();
-			try {
-				String responseJson = IOUtils.toString(instream, "utf-8");
-				return responseJson;
-			} finally {
-				instream.close();
+			HttpResponse response = httpclient.execute(httpget);
+			r = new Response(response.getStatusLine().getStatusCode(), "");
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				InputStream instream = entity.getContent();
+				try {
+					String responseJson = IOUtils.toString(instream, "utf-8");
+					r.body = responseJson;
+				} finally {
+					instream.close();
+				}
 			}
-		}
 		} catch (Exception e){
 			System.err.println("Something went wrong during network transaction.");
 			return null;
 		}
-		return null;
+		return r;
 	}
 
 }

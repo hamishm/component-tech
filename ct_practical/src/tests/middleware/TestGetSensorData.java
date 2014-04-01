@@ -16,8 +16,7 @@ public class TestGetSensorData {
 
 	@Test
 	public void testCall() {
-		GetSensorData get = new GetSensorData("www.google.com","");
-		Response r = get.call();
+		Response r = GetSensorData.call("www.google.com", "");
 		assertTrue(r == null);
 	}
 

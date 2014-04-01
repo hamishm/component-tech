@@ -20,7 +20,6 @@ public abstract class Client implements Runnable{
 	protected String brokerUrl = "localhost";
 	protected String sessionId = "AAAAAA";
 	
-	protected final String type = "client";
 	protected String name = String.valueOf((int)(Math.random()*10000));
 	
 	protected void tick(){
@@ -29,6 +28,10 @@ public abstract class Client implements Runnable{
 	
 	public Location getLocation(){
 		return location;
+	}
+	
+	public String getType(){
+		return "client";
 	}
 	
 	@Override
@@ -77,7 +80,7 @@ public abstract class Client implements Runnable{
 		if (brokerUrl == null
 				|| sessionId == null){
 				//|| (System.currentTimeMillis() - lastRegistered > 60 * 10 * 1000)) {
-			String response = Register.call(type, getLocation());
+			String response = Register.call(getType(), getLocation());
 			if(response != null){
 				JSONObject obj = (JSONObject) JSONValue.parse(response);
 				this.sessionId = (String)obj.get("session_id");
@@ -86,7 +89,7 @@ public abstract class Client implements Runnable{
 			lastRegistered = System.currentTimeMillis();
 		}
 		if (sessionId == null || brokerUrl == null) {
-			System.err.println("Error registering client: " + name);
+			System.err.println("Error registering client with registery: " + name);
 		}
 	}
 
