@@ -43,6 +43,39 @@ func unmarshalString(str string, value reflect.Value) error {
     return nil
 }
 
+func unmarshalSlice(slice []interface{}, value reflect.Value) error {
+    switch k := value.Kind(); k {
+    case reflect.Array:
+        if value.Len() < len(slice) {
+            return fmt.Errorf("Array is too short to unmarshal into")
+        }
+    case reflect.Slice:
+        if value.IsNil() {
+            if value.Type().Elem().Kind() == reflect.Interface {
+                value.Set(reflect.ValueOf(slice))
+                return nil
+            }
+            value.Set(reflect.MakeSlice(value.Type(), len(slice), len(slice)))
+        }
+        if value.Len() < len(slice) {
+            return fmt.Errorf("Array is too short to unmarshal into")
+        }
+    default:
+        return fmt.Errorf("Cannot unmarshal slice into %q", k)
+    }
+
+    var err error = nil
+    for i := 0; i < value.Len(); i++ {
+        settable := value.Index(i)
+        err := unmarshalValue(reflect.ValueOf(slice[i]), settable)
+        if err != nil {
+            return err
+        }
+    }
+
+    return err
+}
+
 func unmarshalStruct(decoded map[string]interface{}, value reflect.Value) error {
     if value.Kind() == reflect.Map {
         _, ok := value.Interface().(map[string]interface{})
@@ -71,9 +104,6 @@ func unmarshalStruct(decoded map[string]interface{}, value reflect.Value) error 
         if err != nil {
             return err
         }
-
-        fmt.Println(reflect.TypeOf(val))
-        fmt.Println(tf.Type)
     }
     return nil
 }
@@ -104,10 +134,10 @@ func unmarshalValue(value reflect.Value, settable reflect.Value) error {
         return unmarshalString(val.(string), settable)
     case reflect.Map:
         return unmarshalStruct(val.(map[string]interface{}), settable)
-    //case reflect.Slice:
-    //    return unmarshalSlice(val.([]interface{}), settable)
+    case reflect.Slice:
+        return unmarshalSlice(val.([]interface{}), settable)
     default:
-        panic(value.Kind())
+        panic(fmt.Sprintf("Unexpected unmarshal type: %s", value.Kind()))
     }
 }
 

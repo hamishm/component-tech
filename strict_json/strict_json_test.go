@@ -88,3 +88,70 @@ func TestStrictJSON(t *testing.T) {
 
     fmt.Println(testMapVal)
 }
+
+type TestingSlice struct {
+    Slice []Nested `json:"slice"`
+}
+
+type TestingArray struct {
+    Slice [5]Nested `json:"slice"`
+}
+
+func TestJSONArray(t *testing.T) {
+    validJSON := []byte("{\"slice\": [{\"x\": \"a\", \"y\": \"b\"}, " +
+        "{\"x\": \"c\", \"y\": \"d\"}, {\"x\": \"e\", \"y\": \"f\"}, " +
+        "{\"x\": \"g\", \"y\": \"h\"}, {\"x\": \"i\", \"y\": \"j\"}] }")
+
+    expected := TestingSlice{
+        Slice: []Nested{
+            {X: "a", Y: "b"},
+            {X: "c", Y: "d"},
+            {X: "e", Y: "f"},
+            {X: "g", Y: "h"},
+            {X: "i", Y: "j"},
+        },
+    }
+
+    var testVal TestingSlice
+    err := strict_json.Unmarshal(validJSON, &testVal)
+
+    if err != nil {
+        fmt.Println(err)
+        t.Error("unmarshing valid JSON into struct with slice failed")
+    } else if !reflect.DeepEqual(testVal, expected) {
+        t.Error("non-matching unmarshalling with slice")
+    }
+
+    expectedArray := TestingArray{
+        Slice: [5]Nested{
+            {X: "a", Y: "b"},
+            {X: "c", Y: "d"},
+            {X: "e", Y: "f"},
+            {X: "g", Y: "h"},
+            {X: "i", Y: "j"},
+        },
+    }
+
+    var testArrayVal TestingArray
+    err = strict_json.Unmarshal(validJSON, &testArrayVal)
+
+    if err != nil {
+        fmt.Println(err)
+        t.Error("unmarshing valid JSON into struct with array failed")
+    } else if !reflect.DeepEqual(testArrayVal, expectedArray) {
+        t.Error("non-matching unmarshalling with array")
+    }
+
+    tooManyJSON := []byte("{\"slice\": [{\"x\": \"a\", \"y\": \"b\"}, " +
+        "{\"x\": \"c\", \"y\": \"d\"}, {\"x\": \"e\", \"y\": \"f\"}, " +
+        "{\"x\": \"g\", \"y\": \"h\"}, {\"x\": \"i\", \"y\": \"j\"}, " +
+        "{\"x\": \"k\", \"y\": \"l\"}]}")
+
+    var testTooManyVal TestingArray
+    err = strict_json.Unmarshal(tooManyJSON, &testTooManyVal)
+
+    if err == nil {
+        t.Error("array too short - should have returned error")
+    }
+    fmt.Println(err)
+}
