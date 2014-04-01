@@ -16,8 +16,8 @@ public abstract class Client implements Runnable{
 	protected Location location = null;
 	
 	private double lastRegistered = 0.0;
-	protected String brokerUrl = null;
-	protected String sessionId = null;
+	protected String brokerUrl = "localhost";
+	protected String sessionId = "AAAAAA";
 	
 	protected final String type = "client";
 	protected String name = String.valueOf((int)(Math.random()*10000));
@@ -74,8 +74,8 @@ public abstract class Client implements Runnable{
 	 */
 	private void register() {
 		if (brokerUrl == null
-				|| sessionId == null
-				|| (System.currentTimeMillis() - lastRegistered > 60 * 10 * 1000)) {
+				|| sessionId == null){
+				//|| (System.currentTimeMillis() - lastRegistered > 60 * 10 * 1000)) {
 			String response = Register.call(type, getLocation());
 			if(response != null){
 				JSONObject obj = (JSONObject) JSONValue.parse(response);
