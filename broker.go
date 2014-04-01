@@ -86,7 +86,7 @@ func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []by
     msgs := consumer.MessageQueue.Poll()
     w.Write([]byte("[\n  "))
     for _, msg := range(msgs) {
-        sensorMsg := msg.(SensorMessage)
+        sensorMsg := msg.(map[string]interface{})
         bytes, err := json.Marshal(sensorMsg)
         if err != nil {
             http.Error(w, "Error marshaling message", 500)
