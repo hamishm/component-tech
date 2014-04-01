@@ -26,9 +26,6 @@ public class Network {
 	 */
 	public static Response callPost(String url, String payload) {
 		// set up request
-		System.out.println(url);
-		System.out.println(payload);
-		
 		Response r = null;
 		
 		CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -47,12 +44,14 @@ public class Network {
 				try {
 					String responseJson = IOUtils.toString(instream, "utf-8");
 					r.body = responseJson;
-				} finally {
+				} catch (Exception e){
+					System.err.println("Something went wrong processing POST response");
+				}finally {
 					instream.close();
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Something went wrong during network transaction.");
+			System.err.println("Something went wrong during POST request");
 			e.printStackTrace();
 		}
 		return r;
@@ -65,7 +64,6 @@ public class Network {
 	 * @return text body of the response, null if the request failed to get a response
 	 */
 	public static Response callGet(String url) {
-		System.out.println(url);
 		Response r = null;
 		
 		CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -81,12 +79,15 @@ public class Network {
 				try {
 					String responseJson = IOUtils.toString(instream, "utf-8");
 					r.body = responseJson;
+				} catch (Exception e){
+					System.err.println("Something went wrong processing GET response");
 				} finally {
 					instream.close();
 				}
 			}
 		} catch (Exception e){
-			System.err.println("Something went wrong during network transaction.");
+			System.err.println("Something went wrong during GET request");
+			e.printStackTrace();
 			return null;
 		}
 		return r;

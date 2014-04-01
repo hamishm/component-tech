@@ -35,6 +35,7 @@ public class GetSensorData {
 					.setHost(hosturl)
 					.setPath("/consume/"+id)
 					.build();
+			System.out.println(uri.toString());
 		} catch (URISyntaxException e) {
 			System.err.println("MalformedURI: host: " + hosturl);
 			return null;

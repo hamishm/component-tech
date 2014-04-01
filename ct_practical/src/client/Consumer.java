@@ -13,7 +13,7 @@ import dataTypes.SensorData;
 public class Consumer extends Client{
 	private String consumerId = null;
 	
-	Location interestLoc = null;
+	Location interestLoc = new Location(56.322629,-2.985964);
 	double interestRadius = 10;
 	
 	public Consumer() {
@@ -36,10 +36,12 @@ public class Consumer extends Client{
 	 * broker url
 	 */
 	private void handleGetData() {
-		if (brokerUrl != null && sessionId != null) {
+		if (brokerUrl != null && sessionId != null && consumerId != null) {
 			Response r = GetSensorData.call(brokerUrl, consumerId);
-			if(r == null){
-				System.err.println("Producer failed to get a response.");
+			if(r == null || r.code != 200){
+				System.err.println("Consumer " + name + " Failed to get a response.");
+			} else {
+				System.out.println("Consumer " + name + " Success: " + r.body);
 			}
 		}
 	}

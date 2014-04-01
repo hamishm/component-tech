@@ -21,12 +21,11 @@ public class Producer extends Client {
 	 */
 	private void handlePostData() {
 		if (brokerUrl != null && sessionId != null) {
-			//System.out.println("\t" + getData().getJsonObj().toJSONString());
-			Response response = PostSensorData.call(brokerUrl, sessionId, getData());
-			if(response != null){
-				// do something
+			Response r = PostSensorData.call(brokerUrl, sessionId, getData());
+			if(r == null || r.code != 200){
+				System.err.println("Producer " + name + " Failed to get a response.");
 			} else {
-				// there was an error
+				System.out.println("Producer " + name + " Success: " + r.body);
 			}
 		}
 	}

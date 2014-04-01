@@ -28,7 +28,7 @@ public class Handshake {
 			uri = new URIBuilder()
 				.setScheme("http")
 				.setHost(brokerUrl)
-				.setPath("/consumer")
+				.setPath("/consume")
 				.build();			
 		} catch (URISyntaxException e) {
 			System.err.println("MalformedURI: url: " + brokerUrl);
@@ -41,9 +41,9 @@ public class Handshake {
 		if(response != null){
 			try{
 				JSONObject jsonObj = (JSONObject) JSONValue.parse(response.body);
-				return (String)jsonObj.get("session_id");
+				return (String)jsonObj.get("consumer_id");
 			} catch (Exception e){
-				System.err.println("Malformed response in handshake: " + response);
+				System.err.println("Malformed response in handshake: " + response.body);
 			}
 		}
 		return null;

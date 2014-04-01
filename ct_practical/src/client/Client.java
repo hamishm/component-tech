@@ -18,7 +18,7 @@ public abstract class Client implements Runnable{
 	private double lastRegistered = 0.0;
 
 	protected String brokerUrl = "localhost";
-	protected String sessionId = "AAAAAA";
+	protected String sessionId = "bogusValue";
 	
 	protected String name = String.valueOf((int)(Math.random()*10000));
 	
@@ -92,5 +92,6 @@ public abstract class Client implements Runnable{
 			System.err.println("Error registering client with registery: " + name);
 		}
 	}
+
 
 }
