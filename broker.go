@@ -18,6 +18,7 @@ const MaxRTreeNodes = 50
 const MinFillRatio = 0.35
 const DefaultMapSize = 500
 
+
 type Consumer struct {
     ID           string
     MessageQueue queue.Queue
@@ -29,6 +30,7 @@ func NewConsumer() *Consumer {
     consumer.MessageQueue = queue.NewListQueue()
     return consumer
 }
+
 
 type Broker struct {
     ConsumerTree *rtree.RTree
@@ -43,6 +45,7 @@ func newBroker() *Broker {
     }
 }
 
+
 type RegisterConsumerMessage struct {
     Longitude float32 `json:"longitude"`
     Latitude  float32 `json:"latitude"`
@@ -50,16 +53,11 @@ type RegisterConsumerMessage struct {
 }
 
 func (msg *RegisterConsumerMessage) Bounds() rtree.Rect {
-    left := msg.Longitude - msg.Radius
-    right := msg.Longitude + msg.Radius
-    top := msg.Latitude - msg.Radius
-    bottom := msg.Latitude + msg.Radius
-
     return rtree.Rect{
-        Left: left,
-        Top: top,
-        Bottom: bottom,
-        Right: right,
+        Left: msg.Longitude - msg.Radius,
+        Top: msg.Latitude - msg.Radius,
+        Bottom: msg.Latitude + msg.Radius,
+        Right: msg.Longitude + msg.Radius,
     }
 }
 
@@ -85,8 +83,9 @@ func (b *Broker) handleRegConsumer(w http.ResponseWriter, r *http.Request, body 
     b.ConsumerMap[consumer.ID] = consumer
     b.ConsumerTree.Insert(consumer, consumer.Area)
 
-    w.Write([]byte(fmt.Sprintf("{\"consumer_id\": \"%s\"}\n", consumer.ID)))
+    w.Write([]byte(fmt.Sprintf(`{"consumer_id": "%s"}`, consumer.ID)))
 }
+
 
 func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []byte) {
     pathParts := strings.Split(r.URL.Path, "/")
@@ -111,9 +110,11 @@ func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []by
     w.Write(bytes)
 }
 
+
 func (b *Broker) handleRegProducer(w http.ResponseWriter, r *http.Request, body []byte) {
     w.Write([]byte("Producer registration not used right now\n"))
 }
+
 
 type Location struct {
     Longitude float32 `json:"longitude"`
@@ -121,13 +122,13 @@ type Location struct {
 }
 
 type ProducerMessage struct {
-    Location *Location                `json:"location"`
-    Data     []map[string]interface{} `json:"data"`
+    Location *Location     `json:"location"`
+    Data     []interface{} `json:"data"`
 }
 
 type QueuedMessage struct {
-    Location *Location              `json:"location"`
-    Data     map[string]interface{} `json:"data"`
+    Location *Location   `json:"location"`
+    Data     interface{} `json:"data"`
 }
 
 func (b *Broker) handleProduce(w http.ResponseWriter, r *http.Request, body []byte) {
