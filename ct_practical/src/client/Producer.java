@@ -1,4 +1,4 @@
-package producer;
+package client;
 
 import methods.PostSensorData;
 import methods.Register;
@@ -11,26 +11,16 @@ import dataTypes.Location;
 import dataTypes.Response;
 import dataTypes.SensorData;
 
-public class Producer implements Runnable {
-	public static final int SLEEP_TIME = 2000; // 2 seconds
-
-	private boolean running = false;
-	private Register registerMethod = null;
+public class Producer extends Client {
+	protected String type = "producer";
+	
 	private PostSensorData postDataMethod = null;
 
-	private Location location = null;
-
-	private double lastRegistered = 0.0;
-	private String brokerUrl = null;
-	private String sessionId = null;
-
 	public Producer() {
-		registerMethod = new Register();
 		postDataMethod = new PostSensorData(brokerUrl, brokerUrl);
 	}
 
 	public void produce() {
-		handleRegister();
 		handlePostData();
 	}
 
@@ -51,29 +41,14 @@ public class Producer implements Runnable {
 		}
 	}
 
-	/**
-	 * Sets the Producer's sessionId and brokerUrl to the
-	 * values which the middleware's registry assigns it
-	 */
-	private void handleRegister() {
-		if (brokerUrl == null
-				|| sessionId == null
-				|| (System.currentTimeMillis() - lastRegistered > 60 * 10 * 1000)) {
-			registerMethod.call(getLocation());
-			sessionId = registerMethod.getSessionId();
-			brokerUrl = registerMethod.getBrokerUrl();
-			lastRegistered = System.currentTimeMillis();
-		}
-		if (sessionId == null || brokerUrl == null) {
-			System.err.println("Error registering.");
-		}
-	}
 
 	/**
 	 * Produces a random location around Fife the first time this method is
 	 * called. Returns same location from then on
 	 * 
-	 * @return
+	 * Clusters locations close to Fife
+	 * 
+	 * @return random location in Fife
 	 */
 	public Location getLocation() {
 		if (location == null) { // initalizes a random location around Fife
@@ -102,21 +77,9 @@ public class Producer implements Runnable {
 	}
 
 	@Override
-	public void run() {
-		running = true;
-		while (running) {
-			try {
-				produce();
-				Thread.currentThread().sleep(SLEEP_TIME);
-			} catch (Exception e) {
-				if (e instanceof InterruptedException) {
-					running = false;
-					Thread.currentThread().interrupt();
-				} else {
-					e.printStackTrace();
-				}
-			}
-		}
+	protected void tick() {
+		super.tick();
+		produce();
 	}
 
 }

@@ -1,4 +1,4 @@
-package consumer;
+package client;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,26 +15,16 @@ import dataTypes.Location;
 import dataTypes.Response;
 import dataTypes.SensorData;
 
-public class Consumer {
-	public static final int SLEEP_TIME = 2000; // 2 seconds
-
-	private boolean running = false;
-	private Register registerMethod = null;
+public class Consumer extends Client{
+	protected final String type = "consumer";
+	
 	private GetSensorData getDataMethod = null;
 
-	private Location location = null;
-
-	private double lastRegistered = 0.0;
-	private String brokerUrl = null;
-	private String sessionId = null;
-
 	public Consumer() {
-		registerMethod = new Register();
 		getDataMethod = new GetSensorData(brokerUrl, brokerUrl);
 	}
 
 	public void produce() {
-		handleRegister();
 		handleGetData();
 	}
 
@@ -50,24 +40,6 @@ public class Consumer {
 			if(r == null){
 				System.err.println("Producer failed to get a response.");
 			}
-		}
-	}
-
-	/**
-	 * Sets the Producer's sessionId and brokerUrl to the
-	 * values which the middleware's registry assigns it
-	 */
-	private void handleRegister() {
-		if (brokerUrl == null
-				|| sessionId == null
-				|| (System.currentTimeMillis() - lastRegistered > 60 * 10 * 1000)) {
-			registerMethod.call(getLocation());
-			sessionId = registerMethod.getSessionId();
-			brokerUrl = registerMethod.getBrokerUrl();
-			lastRegistered = System.currentTimeMillis();
-		}
-		if (sessionId == null || brokerUrl == null) {
-			System.err.println("Error registering.");
 		}
 	}
 
@@ -102,22 +74,9 @@ public class Consumer {
 				getLocation(), new Data(String.valueOf(Math.random())));
 		return rand;
 	}
-
-	@Override
-	public void run() {
-		running = true;
-		while (running) {
-			try {
-				produce();
-				Thread.currentThread().sleep(SLEEP_TIME);
-			} catch (Exception e) {
-				if (e instanceof InterruptedException) {
-					running = false;
-					Thread.currentThread().interrupt();
-				} else {
-					e.printStackTrace();
-				}
-			}
-		}
+	
+	protected void tick(){
+		super.tick();
+		produce();
 	}
 }

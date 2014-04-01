@@ -29,46 +29,7 @@ public class Register {
 	 * @throws URISyntaxException 
 	 * @throws IOException 
 	 */
-	public Response call(Location location) throws URISyntaxException, IOException {
-		URI uri = new URIBuilder()
-			.setScheme("http")
-			.setHost(registryUrl)
-			.setPath("register/"+callingType)
-			.build();
-
-		System.out.println("Calling: " + uri);
-
-		// http stuff here
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpPost httppost = new HttpPost(uri);
-
-		httppost.addHeader("Accept", "application/json");
-		httppost.addHeader("Accept-Charset", "utf-8");
-		httppost.addHeader("Content-Length", "0");
-		// add json message:
-		StringEntity entity = new StringEntity(
-				location.getJsonObj().toJSONString(), "UTF-8");
-		System.out.println(IOUtils.toString(entity.getContent()));
-		httppost.setEntity(entity);
-		HttpResponse response = httpclient.execute(httppost);
-		if (response.getStatusLine().getStatusCode() != 200) {
-			System.err.println("Error response code:");
-			System.err.println(response.getStatusLine().toString());
-			return null;
-		}
-
-		HttpEntity rEntity = response.getEntity();
-		if (rEntity != null) {
-			InputStream instream = rEntity.getContent();
-			try {
-				String responseJson = IOUtils.toString(instream, "utf-8");
-				System.out.println(responseJson);
-				Response r = new Response(responseJson);
-				return r;
-			} finally {
-				instream.close();
-			}
-		}
+	public Response call(Location location) {
 
 		return null;
 	}
@@ -81,6 +42,16 @@ public class Register {
 	public String getBrokerUrl() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * 
+	 * @param type - the type of the calling class (producer/consumer)
+	 * @param location
+	 * @return json string of results or null if error occured
+	 */
+	public static String call(String type, Location location) {
+		return null;		
 	}
 
 }
