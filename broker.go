@@ -86,7 +86,7 @@ func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []by
     msgs := consumer.MessageQueue.Poll()
     w.Write([]byte("[\n  "))
     for _, msg := range(msgs) {
-        sensorMsg := msg.(map[string]interface{})
+        sensorMsg := msg.(*QueuedMessage)
         bytes, err := json.Marshal(sensorMsg)
         if err != nil {
             http.Error(w, "Error marshaling message", 500)
@@ -99,7 +99,7 @@ func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []by
 }
 
 func (b *Broker) handleRegProducer(w http.ResponseWriter, r *http.Request, body []byte) {
-    w.Write([]byte("unused session key\n"))
+    w.Write([]byte("Producer registration not used right now\n"))
 }
 
 type Location struct {
@@ -107,11 +107,15 @@ type Location struct {
     Latitude  float32 `json:"latitude"`
 }
 
-type SensorMessage struct {
-    Location Location      `json:"location"`
+type ProducerMessage struct {
+    Location *Location      `json:"location"`
     Data     []interface{} `json:"data"`
 }
 
+type QueuedMessage struct {
+    Location *Location
+    Data     interface{}
+}
 
 func (b *Broker) handleProduce(w http.ResponseWriter, r *http.Request, body []byte) {
     pathParts := strings.Split(r.URL.Path, "/")
@@ -121,7 +125,7 @@ func (b *Broker) handleProduce(w http.ResponseWriter, r *http.Request, body []by
     }
     //producerID := pathParts[1]
 
-    var msg SensorMessage
+    var msg ProducerMessage
     err := json.Unmarshal(body, &msg)
     if err != nil {
         http.Error(w, err.Error(), 400)
@@ -131,9 +135,17 @@ func (b *Broker) handleProduce(w http.ResponseWriter, r *http.Request, body []by
     longitude := msg.Location.Longitude
     latitude  := msg.Location.Latitude
 
+    storedData := make([]interface{}, len(msg.Data))
+    for i := 0; i < len(msg.Data); i++ {
+        storedData[i] = &QueuedMessage{
+            Location: msg.Location,
+            Data:     msg.Data[i],
+        }
+    }
+
     b.consumerTree.Visit(longitude, latitude, func(value interface{}, bounds rtree.Rect) {
         consumer := value.(*Consumer)
-        consumer.MessageQueue.PutMany(msg.Data)
+        consumer.MessageQueue.PutMany(storedData)
     })
 
     w.Write([]byte("cheers"))
