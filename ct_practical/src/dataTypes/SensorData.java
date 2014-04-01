@@ -1,5 +1,9 @@
 package dataTypes;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import core.JsonObject;
@@ -11,12 +15,21 @@ public class SensorData implements JsonObject{
 
 	Date date;
 	Location location;
-	Data data;
+	List<Double> data = new ArrayList<Double>();
 	
-	public SensorData(Date de, Location l, Data da){
+	public SensorData(Date de, Location l, ArrayList<Double> data){
 		this.date = de;
 		this.location = l;
-		this.data = da;
+		this.data = data;
+	}
+	
+	public void addData(Double d){
+		data.add(d);
+	}
+	
+	public SensorData(Date de, Location l){
+		this.date = de;
+		this.location = l;
 	}
 	
 	public Date getDate() {
@@ -27,7 +40,7 @@ public class SensorData implements JsonObject{
 		return location;
 	}
 
-	public Data getData() {
+	public List<Double> getData() {
 		return data;
 	}
 
@@ -39,7 +52,11 @@ public class SensorData implements JsonObject{
 	public void load(JSONObject obj) {
 		this.date = new Date(obj);
 		this.location = new Location((JSONObject)obj.get("location"));
-		this.data = new Data((JSONObject)obj.get("data"));
+		JSONArray arr = (JSONArray)obj.get("data");
+		for(Object o : arr){
+			Number n = (Number)o;
+			this.data.add(n.doubleValue());
+		}
 	}
 
 	@Override
@@ -47,7 +64,11 @@ public class SensorData implements JsonObject{
 		JSONObject obj = new JSONObject();
 		obj.put("date", date.toString());
 		obj.put("location", location.getJsonObj());
-		obj.put("data", data.getJsonObj());
+		JSONArray arr = new JSONArray();
+		for(Double d : data){
+			arr.add(d);
+		}
+		obj.put("data", arr);
 		return obj;
 	}
 

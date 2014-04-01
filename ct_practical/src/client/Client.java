@@ -16,6 +16,7 @@ public abstract class Client implements Runnable{
 	protected Location location = null;
 	
 	private double lastRegistered = 0.0;
+
 	protected String brokerUrl = "localhost";
 	protected String sessionId = "AAAAAA";
 	

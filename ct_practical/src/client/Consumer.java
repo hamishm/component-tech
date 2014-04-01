@@ -1,15 +1,9 @@
 package client;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import methods.GetSensorData;
-import methods.PostSensorData;
-import methods.Register;
 
 import org.joda.time.DateTime;
 
-import dataTypes.Data;
 import dataTypes.Date;
 import dataTypes.Location;
 import dataTypes.Response;
@@ -71,7 +65,8 @@ public class Consumer extends Client{
 	 */
 	public SensorData getData() {
 		SensorData rand = new SensorData(new Date(DateTime.now()),
-				getLocation(), new Data(String.valueOf(Math.random())));
+				getLocation());
+		rand.addData(Math.random());
 		return rand;
 	}
 	

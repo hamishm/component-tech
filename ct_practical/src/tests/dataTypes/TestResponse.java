@@ -6,9 +6,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.Test;
 
-import dataTypes.Data;
-import dataTypes.Date;
-import dataTypes.Location;
 import dataTypes.Response;
 import dataTypes.SensorData;
 

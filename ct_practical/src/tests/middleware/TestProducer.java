@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
 import client.MovingProducer;
-import client.ProducerCollection;
+import client.ClientCollection;
 import dataTypes.Location;
 
 public class TestProducer {
@@ -19,13 +19,4 @@ public class TestProducer {
 		System.out.printf("%s versus %s\n",l1,l2);
 		assertFalse(l1.getLatitude() == l2.getLatitude());
 	}
-	
-	@Test
-	public void testProducerCollection() throws InterruptedException {
-		ProducerCollection p = new ProducerCollection();
-		p.staggerStart();
-		Thread.currentThread().sleep(1000);
-		p.stopAll();
-	}
-	
 }

@@ -1,13 +1,12 @@
 package tests.dataTypes;
 
-import dataTypes.Data;
 import dataTypes.Date;
 import dataTypes.Location;
 import dataTypes.SensorData;
 
 public class TestUtils {
 	public static SensorData getSensorData(){
-		SensorData sd = new SensorData(getDate(), getLocation(), getData());
+		SensorData sd = new SensorData(getDate(), getLocation());
 		return sd;
 	}
 	
@@ -21,11 +20,6 @@ public class TestUtils {
 	public static  Date getDate(){
 		String dateS = "2003-01-1712:12:12.342-0800";
 		Date d = new Date(dateS);
-		return d;
-	}
-	
-	public static  Data getData(){
-		Data d = new Data("ExampleDataString");
 		return d;
 	}
 }

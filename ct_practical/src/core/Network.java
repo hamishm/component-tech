@@ -26,6 +26,9 @@ public class Network {
 	 */
 	public static String callPost(String url, String payload) {
 		// set up request
+		System.out.println(url);
+		System.out.println(payload);
+		
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpPost httppost = new HttpPost(url);
 		httppost.addHeader("Accept", "application/json");
@@ -52,6 +55,7 @@ public class Network {
 			}
 		} catch (Exception e) {
 			System.err.println("Something went wrong during network transaction.");
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -63,6 +67,7 @@ public class Network {
 	 * @return text body of the response, null if the request failed in anyway
 	 */
 	public static String callGet(String url) {
+		System.out.println(url);
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpGet httpget = new HttpGet(url);
 		httpget.addHeader("Accept", "application/json");

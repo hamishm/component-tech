@@ -3,14 +3,15 @@ package client;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class ProducerCollection implements Iterable<Producer>{
+public class ClientCollection implements Iterable<Client>{
 
-	private ArrayList<Producer> collection = new ArrayList<Producer>();
+	private ArrayList<Client> collection = new ArrayList<Client>();
 	
 	private void init(){
-		for(int i = 0; i < 10; i++){
+		for(int i = 0; i < 1; i++){
 			addProducer();
 			addMovingProducer();
+			addConsumer();
 		}
 	}
 	
@@ -21,8 +22,8 @@ public class ProducerCollection implements Iterable<Producer>{
 	public void staggerStart(){
 		if(collection.size()==0)
 			init();
-		for(Producer p: collection){
-			p.start();
+		for(Client c: collection){
+			c.start();
 			try {
 				Thread.currentThread().sleep((long) (Math.random()*1000));
 			} catch (InterruptedException e) {
@@ -39,14 +40,18 @@ public class ProducerCollection implements Iterable<Producer>{
 		collection.add(new MovingProducer());
 	}
 	
+	public void addConsumer(){
+		collection.add(new Consumer());
+	}
+	
 	@Override
-	public Iterator<Producer> iterator() {
+	public Iterator<Client> iterator() {
 		return collection.iterator();
 	}
 
 	public void stopAll() {
-		for(Producer p: collection){
-			p.stop();
+		for(Client c: collection){
+			c.stop();
 		}
 	}
 	

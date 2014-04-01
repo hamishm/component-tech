@@ -1,11 +1,9 @@
 package client;
 
 import methods.PostSensorData;
-import methods.Register;
 
 import org.joda.time.DateTime;
 
-import dataTypes.Data;
 import dataTypes.Date;
 import dataTypes.Location;
 import dataTypes.Response;
@@ -30,8 +28,9 @@ public class Producer extends Client {
 	 */
 	private void handlePostData() {
 		if (brokerUrl != null && sessionId != null) {
-			postDataMethod.setHost(brokerUrl);
+			postDataMethod.setHost(brokerUrl);	
 			postDataMethod.setSessionId(sessionId);
+			//System.out.println("\t" + getData().getJsonObj().toJSONString());
 			Response response = postDataMethod.call(getData());
 			if(response != null){
 				// do something
@@ -72,7 +71,8 @@ public class Producer extends Client {
 	 */
 	public SensorData getData() {
 		SensorData rand = new SensorData(new Date(DateTime.now()),
-				getLocation(), new Data(String.valueOf(Math.random())));
+				getLocation());
+		rand.addData(Math.random());
 		return rand;
 	}
 
