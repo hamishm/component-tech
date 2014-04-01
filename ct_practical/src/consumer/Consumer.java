@@ -1,5 +1,9 @@
-package producer;
+package consumer;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import methods.GetSensorData;
 import methods.PostSensorData;
 import methods.Register;
 
@@ -11,12 +15,12 @@ import dataTypes.Location;
 import dataTypes.Response;
 import dataTypes.SensorData;
 
-public class Producer implements Runnable {
+public class Consumer {
 	public static final int SLEEP_TIME = 2000; // 2 seconds
 
 	private boolean running = false;
 	private Register registerMethod = null;
-	private PostSensorData postDataMethod = null;
+	private GetSensorData getDataMethod = null;
 
 	private Location location = null;
 
@@ -24,29 +28,27 @@ public class Producer implements Runnable {
 	private String brokerUrl = null;
 	private String sessionId = null;
 
-	public Producer() {
+	public Consumer() {
 		registerMethod = new Register();
-		postDataMethod = new PostSensorData(brokerUrl, brokerUrl);
+		getDataMethod = new GetSensorData(brokerUrl, brokerUrl);
 	}
 
 	public void produce() {
 		handleRegister();
-		handlePostData();
+		handleGetData();
 	}
 
 	/**
 	 * Sends data if the producer has a session id and 
 	 * broker url
 	 */
-	private void handlePostData() {
+	private void handleGetData() {
 		if (brokerUrl != null && sessionId != null) {
-			postDataMethod.setHost(brokerUrl);
-			postDataMethod.setSessionId(sessionId);
-			Response response = postDataMethod.call(getData());
-			if(response != null){
-				// do something
-			} else {
-				// there was an error
+			getDataMethod.setHost(brokerUrl);
+			getDataMethod.setSessionId(sessionId);
+			Response r = getDataMethod.call();
+			if(r == null){
+				System.err.println("Producer failed to get a response.");
 			}
 		}
 	}
@@ -118,5 +120,4 @@ public class Producer implements Runnable {
 			}
 		}
 	}
-
 }

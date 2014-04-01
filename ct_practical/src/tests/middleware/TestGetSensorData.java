@@ -1,4 +1,4 @@
-package tests.dataTypes;
+package tests.middleware;
 
 import static org.junit.Assert.assertTrue;
 
@@ -16,13 +16,8 @@ public class TestGetSensorData {
 
 	@Test
 	public void testCall() {
-		GetSensorData get = new GetSensorData("www.google.com","sdlkgndflkgn2324");
-		Response r = null;
-		try {
-			r = get.call();
-		} catch (IOException | URISyntaxException e) {
-			e.printStackTrace();
-		}
+		GetSensorData get = new GetSensorData("www.google.com","");
+		Response r = get.call();
 		assertTrue(r == null);
 	}
 

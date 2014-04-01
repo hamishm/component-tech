@@ -16,18 +16,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HTTP;
 
+import core.Network;
 import dataTypes.Location;
 import dataTypes.Response;
 import dataTypes.SensorData;
 
 public class PostSensorData {
-	private final String HttpMethod = "POST";
 	private final String path = "/produce";
 	
 	private String host;
 	private String sessionId;
-	
-	Response response = null;
 	
 	public PostSensorData(String host, String sessionId){
 		this.host = host;
@@ -43,58 +41,33 @@ public class PostSensorData {
 	}
 	
 	/**
-	 * Calls this method
-	 * @param url - the URL of the associated broker
-	 * @throws IOException 
-	 * @throws ClientProtocolException 
-	 * @throws URISyntaxException 
+	 * Calls this object's network method. 
+	 * Must set correct host and sessionid for
+	 * call to succeed
+	 * @return - string response of the request 
+	 * or null if request failed
 	 */
-	public Response call(Location location, SensorData data) 
-			throws ClientProtocolException, IOException, URISyntaxException{
-		URI uri = new URIBuilder()
-				.setScheme("http")
-				.setHost(host)
-				.setPath(path+"/"+sessionId)
-				.build();
-		
-		System.out.println("Calling: " + uri);
-		
-		//http stuff here
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpPost httppost = new HttpPost(uri);
-
-		httppost.addHeader("Accept", "application/json");
-		httppost.addHeader("Accept-Charset", "utf-8");
-		httppost.addHeader("Content-Length", "0");
-		//add json message:
-		StringEntity entity = new StringEntity(
-				data.getJsonObj().toJSONString(),
-				"UTF-8");
-		System.out.println(IOUtils.toString(entity.getContent()));
-		httppost.setEntity(entity);
-		HttpResponse response = httpclient.execute(httppost);
-		if(response.getStatusLine().getStatusCode() != 200){
-			System.err.println("Error response code:");
-			System.err.println(response.getStatusLine().toString());
+	public Response call(SensorData data) {
+		URI uri;
+		try {
+			uri = new URIBuilder()
+					.setScheme("http")
+					.setHost(host)
+					.setPath(path+"/"+sessionId)
+					.build();
+		} catch (URISyntaxException e) {
+			System.err.println("MalformedURI: host: " + host + " path: " + path);
 			return null;
 		}
-		
-		HttpEntity rEntity = response.getEntity();
-		if (rEntity != null) {
-			InputStream instream = rEntity.getContent();
-			try {
-				String responseJson = IOUtils.toString(instream, "utf-8");
-				System.out.println(responseJson);
-				Response r = new Response(responseJson);
-				return r;
-			} finally {
-				instream.close();
+		String response = Network.callPost(uri.toString(), data.getJsonObj().toJSONString());
+		if(response != null){
+			try{
+				return new Response(response);
+			} catch (Exception e){
+				System.err.println("Malformed response: " + response);
 			}
 		}
-		
 		return null;
 	}
-	public void call(){
-		
-	}
+	
 }

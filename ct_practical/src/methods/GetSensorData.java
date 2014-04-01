@@ -17,16 +17,15 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONObject;
 
 import core.JsonObject;
+import core.Network;
 import dataTypes.Response;
 
 public class GetSensorData {
-	private final String HttpMethod = "POST";
 	private final String path = "/consume";
 	
 	private String host;
 	private String sessionId;
 	
-	Response response = null;
 	
 	public GetSensorData(String host, String sessionId){
 		this.host = host;
@@ -42,49 +41,30 @@ public class GetSensorData {
 	}
 	
 	/**
-	 * Calls this method
-	 * @param url - the URL of the associated broker
-	 * @throws IOException 
-	 * @throws ClientProtocolException 
-	 * @throws URISyntaxException 
+	 * Calls this method. Must set correct host and sessionid for
+	 * call to succeed
+	 * @return - Response object of the request or null if request failed
 	 */
-	public Response call() throws ClientProtocolException, IOException, URISyntaxException{
-		URI uri = new URIBuilder()
-				.setScheme("http")
-				.setHost(host)
-				.setPath(path+"/"+sessionId)
-				.build();
-		
-		System.out.println("Calling: " + uri);
-		
-		//http stuff here
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpPost httppost = new HttpPost(uri);
-
-		httppost.addHeader("Accept", "application/json");
-		httppost.addHeader("Accept-Charset", "utf-8");
-		httppost.addHeader("Content-Length", "0");	
-		
-		HttpResponse response = httpclient.execute(httppost);
-		if(response.getStatusLine().getStatusCode() != 200){
-			System.err.println("Error response code:");
-			System.err.println(response.getStatusLine().toString());
+	public Response call() {
+		URI uri;
+		try {
+			uri = new URIBuilder()
+					.setScheme("http")
+					.setHost(host)
+					.setPath(path+"/"+sessionId)
+					.build();
+		} catch (URISyntaxException e) {
+			System.err.println("MalformedURI: host: " + host + " path: " + path);
 			return null;
 		}
-		
-		HttpEntity entity = response.getEntity();
-		if (entity != null) {
-			InputStream instream = entity.getContent();
-			try {
-				String responseJson = IOUtils.toString(instream, "utf-8");
-				System.out.println(responseJson);
-				Response r = new Response(responseJson);
-				return r;
-			} finally {
-				instream.close();
+		String response = Network.callGet(uri.toString());
+		if(response != null){
+			try{
+				return new Response(response);
+			} catch (Exception e){
+				System.err.println("Malformed response: " + response);
 			}
 		}
-		
 		return null;
 	}
 }
