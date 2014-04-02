@@ -28,6 +28,7 @@ public class TestAnnouce {
 	@Test
 	public void testAnnounceAsProducer(){
 		Response r = Annouce.callAsProducer(TestTools.getRandomLocation(.1, .1));
+		System.out.println(r.body);
 		JSONObject obj = (JSONObject) JSONValue.parse(r.body);
 		String url  = (String)obj.get("broker_url");
 		System.out.println("Test AnnounceAsProducer got: " + r.body);
@@ -47,17 +48,25 @@ public class TestAnnouce {
 	}
 	
 	@Test
-	public void testAnnounceAsConsumerWithBroker(){
-		Location l = TestTools.getRandomLocation(.1, .1);
-		Response r = Annouce.callAsConsumer(null, null, l, .1);
+	public void testAnnounceAsConsumerWithBroker() throws InterruptedException{
+		Location l = new Location(5,5);
+		Response r = Annouce.callAsConsumer(null, null, l, 1);
 		JSONObject obj = (JSONObject) JSONValue.parse(r.body);
+		System.out.println(r.body);
 		String url  = (String)obj.get("broker_url");
 		assertTrue(url != null);
-		PostSensorData.call(url, TestTools.getData(l));
-		PostSensorData.call(url, TestTools.getData(l));
-		PostSensorData.call(url, TestTools.getData(l));
-		String sessionid = Handshake.call(url, l, .1);
+		url = url.substring(url.indexOf("http://")+7,url.length()-1);
+		System.out.println(url);
+		String sessionid = Handshake.call(url, l, 1);
+		System.out.println(sessionid);
 		assertTrue(sessionid != null);
+		
+		Response r4 = PostSensorData.call(url, TestTools.getData(l));
+		System.out.println(r4.body);
+		PostSensorData.call(url, TestTools.getData(l));
+		PostSensorData.call(url, TestTools.getData(l));
+		
+		Thread.currentThread().sleep(1000);
 		
 		Response r2 = GetSensorData.call(url, sessionid);
 		assertTrue(r2!=null);

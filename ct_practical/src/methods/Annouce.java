@@ -26,8 +26,13 @@ public class Annouce {
 			Location loc, double radius) {
 		URI uri;
 		try {
-			uri = new URIBuilder().setScheme("http").setHost(registryUrl)
-					.setPath("/announce/consumer").build();
+			if (registryId != null) {
+				uri = new URIBuilder().setScheme("http").setHost(registryUrl)
+						.setPath("/announce/consumer").build();
+			} else {
+				uri = new URIBuilder().setScheme("http").setHost(registryUrl)
+						.setPath("/announce/consumer/" + registryId).build();
+			}
 		} catch (URISyntaxException e) {
 			System.err.println("MalformedURI in call announce Consumer: url: "
 					+ registryUrl);
@@ -35,14 +40,16 @@ public class Annouce {
 		}
 		String payload = "{\"latitude\":" + loc.getLatitude()
 				+ ",\"longitude\":" + loc.getLongitude() + ",\"radius\":"
-				+ radius + "registry_id:" + registryId + "broker_url:"
-				+ brokerUrl + "}";
+				+ radius + "}";
 		Response response = Network.callPost(uri.toString(), payload);
+		if (response.body.equals(""))
+			return null;
 		return response;
 	}
-	
+
 	/**
 	 * Calls the announce method
+	 * 
 	 * @Return a response object, should contain a broker url
 	 */
 	public static Response callAsProducer(Location loc) {
@@ -58,6 +65,8 @@ public class Annouce {
 		String payload = "{\"latitude\":" + loc.getLatitude()
 				+ ",\"longitude\":" + loc.getLongitude() + "}";
 		Response response = Network.callPost(uri.toString(), payload);
+		if (response.body.equals(""))
+			return null;
 		return response;
 	}
 }
