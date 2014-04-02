@@ -7,6 +7,7 @@ import (
     "encoding/base64"
     "fmt"
     "io/ioutil"
+    "math"
     "net/http"
     "strings"
     "sync"
@@ -21,6 +22,16 @@ func assert(expr bool, msg string) {
 }
 
 
+func Min(a, b float32) float32 {
+    if a <= b {
+        return a
+    } else {
+        return b
+    }
+}
+
+
+const MaxConsumersPerBroker = 2000
 const MaxRTreeNodes = 50
 const MinFillRatio = 0.35
 const DefaultMapSize = 500
@@ -28,11 +39,11 @@ const CoronerTimeout = time.Duration(1) * time.Minute
 
 
 type Consumer struct {
-    ID           string
-    Area         rtree.Rect
-    Coroner      *time.Timer
-    TreeNode     *rtree.RTreeNode
-    Broker       *Broker
+    ID       string
+    Area     rtree.Rect
+    Coroner  *time.Timer
+    TreeNode *rtree.RTreeNode
+    Broker   *Broker
 }
 
 func NewConsumer() *Consumer {
@@ -41,30 +52,29 @@ func NewConsumer() *Consumer {
 }
 
 type Broker struct {
-    URL      string
-    TreeNode *rtree.RTreeNode
-    Coroner  *time.Timer
-    Active   bool
+    URL          string
+    ConsumerTree *rtree.RTree
+    Coroner      *time.Timer
 }
 
 func NewBroker() *Broker {
     broker := new(Broker)
     broker.URL = ""
-    broker.Active = false
+    minFill := MaxRTreeNodes * MinFillRatio
+    broker.ConsumerTree = rtree.New(MaxRTreeNodes, int(minFill))
     return broker
 }
 
 type Registry struct {
-    ConsumerTree *rtree.RTree
+    BrokerList   []*Broker
     BrokerMap    map[string]*Broker
     ConsumerMap  map[string]*Consumer
     RWLock       sync.RWMutex
 }
 
 func NewRegistry() *Registry {
-    minFill := MaxRTreeNodes * MinFillRatio
     return &Registry{
-        ConsumerTree: rtree.New(MaxRTreeNodes, int(minFill)),
+        BrokerList:   make([]*Broker, 0, 20),
         ConsumerMap:  make(map[string]*Consumer, DefaultMapSize),
         BrokerMap:    make(map[string]*Broker, DefaultMapSize),
     }
@@ -81,51 +91,46 @@ func (r *Registry) RemoveConsumer(consumer *Consumer) {
 
     delete(r.ConsumerMap, consumer.ID)
     consumer.TreeNode.Remove()
+    consumer.Broker = nil
 }
 
-func (r *Registry) SpinUpBroker(node *rtree.RTreeNode) *Broker {
-    for _, broker := range r.BrokerMap {
-        if !broker.Active {
-            // Let's spin it up
-            broker.Active = true
-            node.Value = broker
-            return broker
+func (r *Registry) ChooseBroker(consumer *Consumer) *Broker {
+    var selectedBroker *Broker
+
+    minArea := float32(math.Inf(1))
+    minEnlargement := float32(math.Inf(1))
+
+    // Copied from RTree
+    for _, broker := range r.BrokerList {
+        node := broker.ConsumerTree.Root
+        area := node.Bounds.Area()
+        containingBox := consumer.Area.Union(&node.Bounds)
+        containingArea := containingBox.Area()
+        enlargement := containingArea - area
+
+        if enlargement < minEnlargement ||
+            (enlargement == minEnlargement && area < minArea) {
+            minEnlargement = enlargement
+            minArea = Min(area, minArea)
+            selectedBroker = broker
         }
     }
 
-    return nil
+    return selectedBroker
 }
 
-func (r *Registry) AddConsumer(consumer *Consumer) error {
+func (r *Registry) AddConsumer(consumer *Consumer) {
     if consumer.Broker != nil {
         // This is a pre-existing consumer
         assert(consumer.TreeNode != nil, "active consumer lacks tree node")
-        consumer.TreeNode.Remove()
-
-        // Consumer node removal can cause deletion of broker
-        if consumer.Broker.TreeNode.Parent == nil {
-            consumer.Broker.Active = false
-            consumer.Broker.TreeNode = nil
-        }
+        r.RemoveConsumer(consumer)
     }
 
-    node := r.ConsumerTree.Insert(consumer, consumer.Area)
+    consumer.Broker = r.ChooseBroker(consumer)
+    assert(consumer.Broker != nil, "no broker to add to!")
+
+    consumer.TreeNode = consumer.Broker.ConsumerTree.Insert(consumer, consumer.Area)
     r.ConsumerMap[consumer.ID] = consumer
-
-    if node.Parent.Value == nil {
-        // We need to spin up a new broker to handle this new rtree split
-        broker := r.SpinUpBroker(node.Parent)
-        if broker == nil {
-            // We're all out of brokers
-            r.RemoveConsumer(consumer)
-            return fmt.Errorf("No space!")
-        }
-        consumer.Broker = broker
-    } else {
-        consumer.Broker = node.Parent.Value.(*Broker)
-    }
-
-    return nil
 }
 
 type AnnounceConsumerMessage struct {
@@ -185,15 +190,11 @@ func (r *Registry) announceConsumer(w http.ResponseWriter, req *http.Request, bo
         consumer.ID = base64.URLEncoding.EncodeToString(consID[:])
 
         consumer.Coroner = time.AfterFunc(CoronerTimeout, func() {
-            r.RemoveConsumer(consumer)
+            fmt.Println("Consumer timeout todo")
         })
     }
 
-    err = r.AddConsumer(consumer)
-    if err != nil {
-        http.Error(w, err.Error(), 500)
-        return
-    }
+    r.AddConsumer(consumer)
 
     w.Write([]byte(fmt.Sprintf(`{"consumer_id": "%s", "broker_url": "%s"}`, consumer.ID, consumer.Broker.URL)))
 }
@@ -234,8 +235,8 @@ func (r *Registry) announceBroker(w http.ResponseWriter, req *http.Request, body
 
     broker = NewBroker()
     broker.URL = msg.URL
-    broker.Active = false
     r.BrokerMap[msg.URL] = broker
+    r.BrokerList = append(r.BrokerList, broker)
 
     w.Write([]byte("OK"))
 }
@@ -257,16 +258,18 @@ func (r *Registry) announceProducer(w http.ResponseWriter, req *http.Request, bo
     defer r.RWLock.RUnlock()
 
     pointsMap := make(map[string]int, 20)
-    r.ConsumerTree.Visit(msg.Longitude, msg.Latitude, func(value interface{}, bounds rtree.Rect) {
-        consumer := value.(*Consumer)
-        broker := consumer.Broker
-        points, ok := pointsMap[broker.URL]
-        if !ok {
-            pointsMap[broker.URL] = 1
-        } else {
-            pointsMap[broker.URL] = points + 1
-        }
-    })
+    for _, broker := range r.BrokerList {
+        broker.ConsumerTree.Visit(msg.Longitude, msg.Latitude, func(value interface{}, bounds rtree.Rect) {
+            consumer := value.(*Consumer)
+            broker := consumer.Broker
+            points, ok := pointsMap[broker.URL]
+            if !ok {
+                pointsMap[broker.URL] = 1
+            } else {
+                pointsMap[broker.URL] = points + 1
+            }
+        })
+    }
 
     var bestURL string
     bestPoints := -1
