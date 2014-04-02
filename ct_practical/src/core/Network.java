@@ -1,14 +1,13 @@
 package core;
 
 import java.io.InputStream;
-import java.net.URI;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -88,6 +87,42 @@ public class Network {
 		} catch (Exception e){
 			System.err.println("Something went wrong during GET request");
 			e.printStackTrace();
+			return null;
+		}
+		return r;
+	}
+	
+	/**
+	 * Calls a get request using Apache libraries
+	 * 
+	 * @param url - the full url to send to
+	 * @return text body of the response, null if the request failed to get a response
+	 */
+	public static Response callDelete(String url) {
+		Response r = null;
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		HttpDelete httpdelete = new HttpDelete(url);
+		httpdelete.addHeader("Accept", "application/json");
+		httpdelete.addHeader("Accept-Charset", "utf-8");
+		httpdelete.addHeader("Content-Length","0");
+		try{
+			HttpResponse response = httpclient.execute(httpdelete);
+			r = new Response(response.getStatusLine().getStatusCode(), "");
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				InputStream instream = entity.getContent();
+				try {
+					String responseJson = IOUtils.toString(instream, "utf-8");
+					r.body = responseJson;
+				} catch (Exception e){
+					System.err.println("Something went wrong processing DELETE response");
+				} finally {
+					instream.close();
+				}
+			}
+		} catch (Exception e){
+			System.err.println("Something went wrong during DELETE request");
 			return null;
 		}
 		return r;
