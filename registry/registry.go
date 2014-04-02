@@ -121,7 +121,7 @@ func (r *Registry) ChooseBroker(consumer *Consumer) *Broker {
     return selectedBroker
 }
 
-func (r *Registry) AddConsumer(consumer *Consumer) {
+func (r *Registry) AddConsumer(consumer *Consumer) error {
     if consumer.Broker != nil {
         // This is a pre-existing consumer
         assert(consumer.TreeNode != nil, "active consumer lacks tree node")
@@ -129,10 +129,13 @@ func (r *Registry) AddConsumer(consumer *Consumer) {
     }
 
     consumer.Broker = r.ChooseBroker(consumer)
-    assert(consumer.Broker != nil, "no broker to add to!")
+    if consumer.Broker == nil {
+        return fmt.Errorf("No brokers available")
+    }
 
     consumer.TreeNode = consumer.Broker.ConsumerTree.Insert(consumer, consumer.Area)
     r.ConsumerMap[consumer.ID] = consumer
+    return nil
 }
 
 type AnnounceConsumerMessage struct {
@@ -179,7 +182,6 @@ func (r *Registry) announceConsumer(w http.ResponseWriter, req *http.Request, bo
         }
     }
 
-
     if registerConsumer {
         var consID [16]byte
         _, err = rand.Read(consID[:])
@@ -192,17 +194,37 @@ func (r *Registry) announceConsumer(w http.ResponseWriter, req *http.Request, bo
         consumer.ID = base64.URLEncoding.EncodeToString(consID[:])
 
         consumer.Coroner = time.AfterFunc(CoronerTimeout, func() {
-            fmt.Println("Consumer timeout todo")
+            r.RemoveConsumer(consumer)
         })
     }
 
-    r.AddConsumer(consumer)
+    err = r.AddConsumer(consumer)
+    if err != nil {
+        w.Write([]byte(err.Error()))
+        return
+    }
+
+    consumer.Coroner.Reset(CoronerTimeout)
 
     w.Write([]byte(fmt.Sprintf(`{"consumer_id": "%s", "broker_url": "%s"}`, consumer.ID, consumer.Broker.URL)))
 }
 
 type AnnounceBrokerMessage struct {
     URL string `json:"url"`
+}
+
+func (r *Registry) RemoveBroker(broker *Broker) {
+    found := false
+    for i, b := range r.BrokerList {
+        if b == broker {
+            copy(r.BrokerList[i:], r.BrokerList[i+1:])
+            r.BrokerList[len(r.BrokerList)-1] = nil
+            r.BrokerList = r.BrokerList[:len(r.BrokerList)-1]
+            found = true
+        }
+    }
+
+    assert(found, "could not find broker to remove")
 }
 
 func (r *Registry) announceBroker(w http.ResponseWriter, req *http.Request, body []byte) {
@@ -217,6 +239,7 @@ func (r *Registry) announceBroker(w http.ResponseWriter, req *http.Request, body
     broker, ok := r.BrokerMap[msg.URL]
 
     if ok {
+        broker.Coroner.Reset(CoronerTimeout)
         r.RWLock.RUnlock()
         w.Write([]byte("OK"))
         return
@@ -231,12 +254,18 @@ func (r *Registry) announceBroker(w http.ResponseWriter, req *http.Request, body
     broker, ok = r.BrokerMap[msg.URL]
 
     if ok {
+        broker.Coroner.Reset(CoronerTimeout)
         w.Write([]byte("OK"))
         return
     }
 
     broker = NewBroker()
     broker.URL = msg.URL
+
+    broker.Coroner = time.AfterFunc(CoronerTimeout, func() {
+        r.RemoveBroker(broker)
+    })
+
     r.BrokerMap[msg.URL] = broker
     r.BrokerList = append(r.BrokerList, broker)
 
