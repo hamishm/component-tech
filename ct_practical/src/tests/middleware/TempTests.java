@@ -60,7 +60,7 @@ public class TempTests {
 		System.out.println("Starting Starting 10 cycles of removing and adding consumers:");
 		for(int i = 0; i < 10; i++){
 			System.out.println("Cycle: "+i);
-			for( int c = 0; c< 100; c++){
+			for(int c = 0; c < 100; c++){
 				consumers.add(new Consumer());
 				consumers.get(c).start();
 			}
@@ -70,8 +70,8 @@ public class TempTests {
 			}
 			consumers.clear();
 		}
-		System.out.println("Finished Cycling, waiting 5 seconds:");
-		Thread.currentThread().sleep(5000);
+		System.out.println("Finished Cycling, waiting 10 seconds:");
+		Thread.currentThread().sleep(10000);
 		for(ProducerCollection cc : group){
 			cc.stop();
 		}

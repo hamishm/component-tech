@@ -40,7 +40,8 @@ public class Consumer extends Client {
 			consumerId = Handshake.call(
 					this.brokerUrl, this.interestLoc, interestRadius);
 		}
-		getData();
+		int numResults = getData();
+		System.out.println(this.name + " Consumer got "+ numResults + " from request");
 	}
 	
 	public String getType(){
@@ -51,7 +52,8 @@ public class Consumer extends Client {
 	 * Sends data if the producer has a session id and 
 	 * broker url
 	 */
-	private void getData() {
+	private int getData() {
+		int results = 0;
 		if (brokerUrl != null && sessionId != null && consumerId != null) {
 			Response r = GetSensorData.call(brokerUrl, consumerId);
 			if(r == null || r.code != 200){
@@ -59,6 +61,7 @@ public class Consumer extends Client {
 			} else {
 				JSONArray result = (JSONArray)JSONValue.parse(r.body);
 				for (Object obj : result) {
+					results++;
 					JSONObject object = (JSONObject)obj;
 					JSONObject location = (JSONObject)object.get("location");
 					Location loc = new Location(location);
@@ -70,6 +73,7 @@ public class Consumer extends Client {
 				}
 			}
 		}
+		return results;
 	}
 	
 	protected void onTick(){

@@ -48,8 +48,4 @@ public class Handshake {
 		}
 		return null;
 	}
-	
-	
-	
-
 }

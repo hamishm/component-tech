@@ -18,13 +18,13 @@ public class PostSensorData {
 	 * @return - string response of the request 
 	 * or null if request failed
 	 */
-	public static Response call(String host, String sessionid, SensorData data) {
+	public static Response call(String host, SensorData data) {
 		URI uri;
 		try {
 			uri = new URIBuilder()
 					.setScheme("http")
 					.setHost(host)
-					.setPath("/produce/"+sessionid)
+					.setPath("/produce")
 					.build();
 		} catch (URISyntaxException e) {
 			System.err.println("MalformedURI: host: " + host);
