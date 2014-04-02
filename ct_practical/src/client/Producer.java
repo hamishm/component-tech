@@ -23,8 +23,8 @@ public class Producer extends Client {
 	 * broker url
 	 */
 	protected void postData() {
-		if (brokerUrl != null && sessionId != null) {
-			Response r = PostSensorData.call(brokerUrl, sessionId, TestTools.getData(getLocation()));
+		if (brokerUrl != null) {
+			Response r = PostSensorData.call(brokerUrl, TestTools.getData(getLocation()));
 			if(r == null || r.code != 200){
 				System.err.println("Producer " + name + " Failed to get a response.");
 			} else {
