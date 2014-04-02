@@ -11,23 +11,31 @@ import (
     "io/ioutil"
     "net/http"
     "strings"
+    "sync"
+    "time"
 )
 
 
 const MaxRTreeNodes = 50
 const MinFillRatio = 0.35
 const DefaultMapSize = 500
+const CoronerTimeout = time.Duration(1) * time.Minute
 
 
 type Consumer struct {
     ID           string
     MessageQueue queue.Queue
     Area         rtree.Rect
+
+    Coroner      *time.Timer
+    TreeNode     *rtree.RTreeNode
+    InWait       bool
 }
 
 func NewConsumer() *Consumer {
     consumer := new(Consumer)
     consumer.MessageQueue = queue.NewListQueue()
+    consumer.InWait = false
     return consumer
 }
 
@@ -35,9 +43,10 @@ func NewConsumer() *Consumer {
 type Broker struct {
     ConsumerTree *rtree.RTree
     ConsumerMap  map[string]*Consumer
+    RWLock       sync.RWMutex
 }
 
-func newBroker() *Broker {
+func NewBroker() *Broker {
     minFill := MaxRTreeNodes * MinFillRatio
     return &Broker{
         ConsumerTree: rtree.New(MaxRTreeNodes, int(minFill)),
@@ -45,6 +54,21 @@ func newBroker() *Broker {
     }
 }
 
+func (b *Broker) RemoveConsumer(consumer *Consumer) {
+    b.RWLock.Lock()
+    defer b.RWLock.Unlock()
+
+    consumer.Coroner.Stop()
+
+    if _, ok := b.ConsumerMap[consumer.ID]; !ok {
+        // We only remove consumers under the broker wlock,
+        // so this should never happen.
+        panic("consumer has already been removed!")
+    }
+
+    delete(b.ConsumerMap, consumer.ID)
+    consumer.TreeNode.Remove()
+}
 
 type RegisterConsumerMessage struct {
     Longitude float32 `json:"longitude"`
@@ -76,12 +100,23 @@ func (b *Broker) handleRegConsumer(w http.ResponseWriter, r *http.Request, body 
         return
     }
 
+    b.RWLock.Lock()
+    defer b.RWLock.Unlock()
+
     consumer := NewConsumer()
     consumer.Area = msg.Bounds()
     consumer.ID = base64.URLEncoding.EncodeToString(consID[:])
+    consumer.TreeNode = b.ConsumerTree.Insert(consumer, consumer.Area)
 
     b.ConsumerMap[consumer.ID] = consumer
-    b.ConsumerTree.Insert(consumer, consumer.Area)
+
+    consumer.Coroner = time.AfterFunc(CoronerTimeout, func() {
+        if consumer.InWait {
+            consumer.Coroner.Reset(CoronerTimeout)
+        } else {
+            b.RemoveConsumer(consumer)
+        }
+    })
 
     w.Write([]byte(fmt.Sprintf(`{"consumer_id": "%s"}`, consumer.ID)))
 }
@@ -95,16 +130,32 @@ func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []by
     }
 
     consumerID := pathParts[2]
+
+    b.RWLock.RLock()
+
     consumer, ok := b.ConsumerMap[consumerID]
     if !ok {
         http.Error(w, "Consumer not registered", 400)
+        b.RWLock.RUnlock()
         return
     }
 
+    consumer.Coroner.Reset(CoronerTimeout)
+    consumer.InWait = true
+
+    // Drop the lock while we poll the queue
+    b.RWLock.RUnlock()
     msgs := consumer.MessageQueue.Poll()
+    b.RWLock.RLock()
+    defer b.RWLock.RUnlock()
+
+    consumer.InWait = false
+    consumer.Coroner.Reset(CoronerTimeout)
+
     bytes, err := json.Marshal(msgs)
     if err != nil {
         http.Error(w, "Error marshaling messages", 500)
+        return
     }
 
     w.Write(bytes)
@@ -157,6 +208,9 @@ func (b *Broker) handleProduce(w http.ResponseWriter, r *http.Request, body []by
         }
     }
 
+    b.RWLock.RLock()
+    defer b.RWLock.RUnlock()
+
     b.ConsumerTree.Visit(longitude, latitude,func(value interface{}, bounds rtree.Rect) {
         consumer := value.(*Consumer)
         consumer.MessageQueue.PutMany(storedData)
@@ -188,7 +242,7 @@ func (b *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    broker := newBroker()
+    broker := NewBroker()
     http.Handle("/", broker)
     http.ListenAndServe(":80", nil)
 }
