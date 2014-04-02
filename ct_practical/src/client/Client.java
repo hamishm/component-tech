@@ -7,12 +7,7 @@ import org.json.simple.JSONValue;
 
 import dataTypes.Location;
 
-public abstract class Client implements Runnable{
-	protected int sleepTime = 2000; // 2 seconds
-
-	private Thread thread = null;
-	private boolean running = false;
-
+public abstract class Client extends Runner implements Runnable{
 	protected Location location = null;
 	
 	private double lastRegistered = 0.0;
@@ -30,54 +25,12 @@ public abstract class Client implements Runnable{
 		this.location = loc;
 	}
 	
-	protected void tick(){
-		register();
-	}
-	
 	public Location getLocation(){
 		return location;
 	}
 	
 	public String getType(){
 		return "client";
-	}
-	
-	@Override
-	public void run() {
-		running = true;
-		while (running) {
-			try {
-				tick();
-				thread.sleep(sleepTime);
-			} catch (Exception e) {
-				if (e instanceof InterruptedException) {
-					running = false;
-					thread.interrupt();
-					thread = null;
-				} else {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Starts the client on its dedicated thread 
-	 */
-	public void start(){
-		if(thread == null){
-			thread = new Thread(this);
-			thread.start();
-		}
-	}
-
-	/**
-	 * kills the client
-	 */
-	public void stop() {
-		if(running){
-			thread.interrupt();
-		}
 	}
 	
 	/**
@@ -101,5 +54,8 @@ public abstract class Client implements Runnable{
 		}
 	}
 
+	protected void onTick(){
+		register();
+	}
 
 }

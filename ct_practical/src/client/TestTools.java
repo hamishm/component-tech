@@ -32,4 +32,24 @@ public class TestTools {
 		return rand;
 	}
 	
+	/**
+	 * Checks if the given point is within the square bounding
+	 * box defined by the radius
+	 * @param center
+	 * @param test
+	 * @param radius 
+	 * @return true if in bounding box
+	 */
+	public static boolean pointInBox(Location interestLoc,
+			double interestRadius, Location loc) {
+		double x = interestLoc.getLatitude() - interestRadius;
+		double y = interestLoc.getLongitude() - interestRadius;
+		if(loc.getLatitude() >= x && loc.getLatitude() <= (x+interestRadius)
+				&& loc.getLatitude() >= y && loc.getLongitude() <= (y+interestRadius))
+			return true;
+		return false;
+	}
+
+	
+	
 }

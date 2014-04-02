@@ -23,7 +23,7 @@ public class Producer extends Client {
 			if(r == null || r.code != 200){
 				System.err.println("Producer " + name + " Failed to get a response.");
 			} else {
-				System.out.println("Producer " + name + " Success: " + r.body);
+				
 			}
 		}
 	}
@@ -35,8 +35,8 @@ public class Producer extends Client {
 	}
 
 	@Override
-	protected void tick() {
-		super.tick();
+	protected void onTick() {
+		super.onTick();
 		produce();
 	}
 

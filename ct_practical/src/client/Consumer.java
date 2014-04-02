@@ -40,7 +40,7 @@ public class Consumer extends Client{
 			consumerId = Handshake.call(
 					this.brokerUrl, this.interestLoc, interestRadius);
 		}
-		handleGetData();
+		getData();
 	}
 	
 	public String getType(){
@@ -51,7 +51,7 @@ public class Consumer extends Client{
 	 * Sends data if the producer has a session id and 
 	 * broker url
 	 */
-	private void handleGetData() {
+	private void getData() {
 		if (brokerUrl != null && sessionId != null && consumerId != null) {
 			Response r = GetSensorData.call(brokerUrl, consumerId);
 			if(r == null || r.code != 200){
@@ -61,22 +61,17 @@ public class Consumer extends Client{
 				for (Object obj : result) {
 					JSONObject object = (JSONObject)obj;
 					JSONObject location = (JSONObject)object.get("location");
-					double lon = ((Double)location.get("longitude")).doubleValue();
-					double lat = ((Double)location.get("latitude")).doubleValue();
-					if (lat < interestLoc.getLatitude() - interestRadius ||
-						    lat > interestLoc.getLatitude() + interestRadius ||
-						    lon < interestLoc.getLongitude() - interestRadius ||
-						    lon > interestLoc.getLongitude() + interestRadius) {
-						System.err.println("Consumer " + name + " received sensor data for wrong location");
+					Location loc = new Location(location);
+					if(!TestTools.pointInBox(interestLoc, interestRadius, loc)){
+						System.err.println("Consumer " + name + " recieved unrequest location data.");
 					}
 				}
-				System.out.println("Consumer " + name + " Success: " + r.body);
 			}
 		}
 	}
 	
-	protected void tick(){
-		super.tick();
+	protected void onTick(){
+		super.onTick();
 		consume();
 	}
 }
