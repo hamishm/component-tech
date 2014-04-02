@@ -22,9 +22,12 @@ import (
 const MaxRTreeNodes = 50
 const MinFillRatio = 0.35
 const DefaultMapSize = 500
-const ConsumerQueueSize = 50
+
 const CoronerTimeout = time.Duration(1) * time.Minute
+const ConsumerQueueSize = 50
 const ConsumerKeepAliveInterval = time.Duration(20) * time.Second
+
+const RegistryAnnouncePeriod = time.Duration(30) * time.Second
 
 
 type Consumer struct {
@@ -269,8 +272,6 @@ func announceBroker(registryURL, myURL string) error {
         return fmt.Errorf("Error, got: %s", string(contents))
     }
 
-    fmt.Println(string(contents))
-
     return nil
 }
 
@@ -286,11 +287,21 @@ func main() {
     if len(os.Args) > 2 {
         registryURL := os.Args[2]
         myURL := os.Args[3]
+
         err := announceBroker(registryURL, myURL)
         if err != nil {
             fmt.Println(err.Error())
             os.Exit(1)
         }
+
+        var timer *time.Timer
+        timer = time.AfterFunc(RegistryAnnouncePeriod, func() {
+            err := announceBroker(registryURL, myURL)
+            if err != nil {
+                fmt.Println("Error reannouncing to broker!")
+            }
+            timer.Reset(RegistryAnnouncePeriod)
+        })
     }
 
     http.Handle("/", broker)
