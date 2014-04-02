@@ -17,13 +17,25 @@ import dataTypes.SensorData;
 public class Consumer extends Client{
 	private String consumerId = null;
 	
-	Location interestLoc = new Location(56.322629,-2.985964);
-	double interestRadius = 10;
+	Location interestLoc = null;
+	double interestRadius = .2;
 	
+	/**
+	 * Initialized the consumer, placing it at 0,0
+	 * and a random interest location
+	 */
 	public Consumer() {
+		super();
+		this.interestLoc = new Location(.1,.1);
+	}
+	
+	public Consumer(Location loc, Location interestLoc, double interestRadius){
+		super(loc);
+		this.interestLoc = interestLoc;
+		this.interestRadius = interestRadius;
 	}
 
-	public void produce() {
+	public void consume() {
 		if(consumerId == null){
 			consumerId = Handshake.call(
 					this.brokerUrl, this.interestLoc, interestRadius);
@@ -62,42 +74,9 @@ public class Consumer extends Client{
 			}
 		}
 	}
-
-	/**
-	 * Produces a random location around Fife the first time this method is
-	 * called. Returns same location from then on
-	 * 
-	 * @return the location of the client
-	 */
-	public Location getLocation() {
-		if (location == null) { // initalizes a random location around Fife
-			double xc = 56.322629; // cupar lat
-			double yc = -2.985964; // cupar long
-			double rand = Math.random();
-			double radius = .193439 * rand;
-			double angle = (rand * 10) % (Math.PI * 2);
-			double lat = (radius * Math.cos(angle)) + xc;
-			double lon = (radius * Math.sin(angle)) + yc;
-			this.location = new Location(lat, lon);
-		}
-		return location;
-	}
-
-	/**
-	 * Gets a random sensor data with the current time, location of the
-	 * producer, and a random number as the sensor data value
-	 * 
-	 * @return
-	 */
-	public SensorData getData() {
-		SensorData rand = new SensorData(new Date(DateTime.now()),
-				getLocation());
-		rand.addData(Math.random());
-		return rand;
-	}
 	
 	protected void tick(){
 		super.tick();
-		produce();
+		consume();
 	}
 }

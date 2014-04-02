@@ -22,6 +22,14 @@ public abstract class Client implements Runnable{
 	
 	protected String name = String.valueOf((int)(Math.random()*10000));
 	
+	public Client(){
+		this.location = new Location(0,0);
+	}
+	
+	public Client(Location loc){
+		this.location = loc;
+	}
+	
 	protected void tick(){
 		register();
 	}
