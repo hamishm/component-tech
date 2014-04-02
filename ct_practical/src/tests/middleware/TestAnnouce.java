@@ -1,7 +1,7 @@
 package tests.middleware;
 
 import static org.junit.Assert.assertTrue;
-import methods.Annouce;
+import methods.Announce;
 import methods.GetSensorData;
 import methods.Handshake;
 import methods.PostSensorData;
@@ -18,7 +18,7 @@ public class TestAnnouce {
 
 	@Test
 	public void testAnnounceAsConsumer(){
-		Response r = Annouce.callAsConsumer(null, null, TestTools.getRandomLocation(.1, .1), .1);
+		Response r = Announce.callAsConsumer(null, null, TestTools.getRandomLocation(.1, .1), .1);
 		JSONObject obj = (JSONObject) JSONValue.parse(r.body);
 		String url  = (String)obj.get("broker_url");
 		System.out.println("Test AnnounceAsConsumer got: " + r.body);
@@ -27,7 +27,7 @@ public class TestAnnouce {
 	
 	@Test
 	public void testAnnounceAsProducer(){
-		Response r = Annouce.callAsProducer(TestTools.getRandomLocation(.1, .1));
+		Response r = Announce.callAsProducer(TestTools.getRandomLocation(.1, .1));
 		System.out.println(r.body);
 		JSONObject obj = (JSONObject) JSONValue.parse(r.body);
 		String url  = (String)obj.get("broker_url");
@@ -38,7 +38,7 @@ public class TestAnnouce {
 	@Test
 	public void testAnnounceAsProducerWithBroker(){
 		Location l = new Location(5,5);
-		Response r = Annouce.callAsProducer(l);
+		Response r = Announce.callAsProducer(l);
 		JSONObject obj = (JSONObject) JSONValue.parse(r.body);
 		String url  = (String)obj.get("broker_url");
 		url = url.substring(url.indexOf("http://")+7,url.length()-1);
@@ -51,7 +51,7 @@ public class TestAnnouce {
 	@Test
 	public void testAnnounceAsConsumerWithBroker() throws InterruptedException{
 		Location l = new Location(5,5);
-		Response r = Annouce.callAsConsumer(null, null, l, 1);
+		Response r = Announce.callAsConsumer(null, null, l, 1);
 		JSONObject obj = (JSONObject) JSONValue.parse(r.body);
 		System.out.println(r.body);
 		String url  = (String)obj.get("broker_url");

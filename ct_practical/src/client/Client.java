@@ -1,13 +1,12 @@
 package client;
 
-import methods.Register;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import dataTypes.Location;
 import dataTypes.Response;
-import methods.Annouce;
+import methods.Announce;
 
 public abstract class Client extends Runner {
 	protected Location location = null;
@@ -45,19 +44,25 @@ public abstract class Client extends Runner {
 				|| (System.currentTimeMillis() - lastRegistered > 10 * 1000)) {
 			Response response = null;
 			if(getType().equals("producer")){
-				response = Annouce.callAsProducer(getLocation());
+				response = Announce.callAsProducer(getLocation());
 			} else {
-				response = Annouce.callAsConsumer(registryId, brokerUrl, getLocation(), ((Consumer)this).interestRadius);
+				response = Announce.callAsConsumer(registryId, brokerUrl, getLocation(), ((Consumer)this).interestRadius);
 			}
 			if(response != null){
 				JSONObject obj = (JSONObject) JSONValue.parse(response.body);
-				this.registryId = (String)obj.get("session_id");
+				this.registryId = (String)obj.get("consumer_id");
 				this.brokerUrl = (String)obj.get("broker_url");
+				if(brokerUrl != null){
+					brokerUrl = brokerUrl.substring(7, brokerUrl.length()-1);
+				}
 			}
 			lastRegistered = System.currentTimeMillis();
 		}
-		if (registryId == null || brokerUrl == null) {
-			System.err.println("Error registering client with registery: " + name);
+		if (getType().equals("consumer") && registryId ==null) {
+			System.err.println("Error getting consumerId "+getType()+" "+name+" from registery");
+		}
+		if (brokerUrl == null) {
+			System.err.println("Error getting brokerUrl "+getType()+" "+name+" with registery");
 		}
 	}
 

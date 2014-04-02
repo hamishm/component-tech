@@ -14,7 +14,7 @@ public class TestRunner {
 	public void testRunner() throws InterruptedException {
 		Runner r = new ProducerCollection();
 		r.start();
-		Thread.currentThread().sleep(10000);
+		Thread.currentThread().sleep(1000);
 		assertTrue(r.isRunning());
 		r.stop();
 		Thread.currentThread().sleep(50);

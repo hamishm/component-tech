@@ -30,7 +30,7 @@ public class PostSensorData {
 			System.err.println("MalformedURI: host: " + host);
 			return null;
 		}
-		System.out.println(data.getJsonObj().toJSONString());
+		
 		return  Network.callPost(uri.toString(), data.getJsonObj().toJSONString());
 	}
 	

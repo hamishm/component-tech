@@ -23,7 +23,9 @@ public class Producer extends Client {
 	 */
 	protected void postData() {
 		if (brokerUrl == null) {
-			System.err.println("Consumer called consume with no broker url");
+			//if url is blank then no brokers exist or 
+			//registry is dead
+			//System.err.println("Consumer called consume with no broker url");
 			return;
 		}
 		Response r = PostSensorData.call(brokerUrl,

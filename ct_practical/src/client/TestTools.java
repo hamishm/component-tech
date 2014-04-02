@@ -9,13 +9,13 @@ import dataTypes.SensorData;
 public class TestTools {
 
 	/**
-	 * Produces a random location
+	 * Produces a random location between 0,0 and 1,1
 	 * @return Location
 	 */
 	public static Location getRandomLocation(){
 		double lat, lon;
-		lat = Math.random() % .4;
-		lon = Math.random() % .4;
+		lat = Math.random() ;
+		lon = Math.random() ;
 		return new Location(lat, lon);
 	}
 	
@@ -24,8 +24,8 @@ public class TestTools {
 	 */
 	public static double[] getRandomPoint(double xBound, double yBound){
 		double[] coords = new double[2];
-		coords[0] = Math.random()%xBound;
-		coords[1] = Math.random()%yBound;
+		coords[0] = (Math.random()*1000)%xBound;
+		coords[1] = (Math.random()*1000)%yBound;
 		return coords;
 	}
 	

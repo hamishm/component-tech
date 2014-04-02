@@ -11,7 +11,7 @@ import core.Network;
 import dataTypes.Location;
 import dataTypes.Response;
 
-public class Annouce {
+public class Announce {
 
 	private static String registryUrl = "localhost";
 
@@ -26,7 +26,7 @@ public class Annouce {
 			Location loc, double radius) {
 		URI uri;
 		try {
-			if (registryId != null) {
+			if (registryId == null) {
 				uri = new URIBuilder().setScheme("http").setHost(registryUrl)
 						.setPath("/announce/consumer").build();
 			} else {
@@ -42,7 +42,7 @@ public class Annouce {
 				+ ",\"longitude\":" + loc.getLongitude() + ",\"radius\":"
 				+ radius + "}";
 		Response response = Network.callPost(uri.toString(), payload);
-		if (response.body.equals(""))
+		if (response.body == null || response.body.equals(""))
 			return null;
 		return response;
 	}
@@ -65,7 +65,7 @@ public class Annouce {
 		String payload = "{\"latitude\":" + loc.getLatitude()
 				+ ",\"longitude\":" + loc.getLongitude() + "}";
 		Response response = Network.callPost(uri.toString(), payload);
-		if (response.body.equals(""))
+		if (response.body==null || response.body.equals(""))
 			return null;
 		return response;
 	}

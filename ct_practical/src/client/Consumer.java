@@ -18,7 +18,7 @@ public class Consumer extends Client {
 	private String consumerId = null;
 	
 	Location interestLoc = null;
-	double interestRadius = .2;
+	double interestRadius = 1;
 	
 	/**
 	 * Initialized the consumer, placing it at 0,0
@@ -26,7 +26,7 @@ public class Consumer extends Client {
 	 */
 	public Consumer() {
 		super();
-		this.interestLoc = new Location(.1,.1);
+		this.interestLoc = new Location(.5,.5);
 	}
 	
 	public Consumer(Location loc, Location interestLoc, double interestRadius){
@@ -36,6 +36,10 @@ public class Consumer extends Client {
 	}
 
 	public void consume() {
+		if(brokerUrl == null){
+			System.err.println("Consumer called consume with no broker url");
+			return;
+		}
 		if(consumerId == null){
 			consumerId = Handshake.call(
 					this.brokerUrl, this.interestLoc, interestRadius);
