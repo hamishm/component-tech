@@ -125,6 +125,37 @@ func newRTreeNode(numNodes int) *RTreeNode {
     }
 }
 
+
+func (node *RTreeNode) Remove() {
+    assert(node.parent != nil, "remove self on root node")
+
+    found := false
+    children := node.parent.children
+    for i, c := range node.parent.children {
+        if c == node {
+            copy(children[i:], children[i+1:])
+            children[len(children)-1] = nil
+            node.parent.children = children[:len(children)-1]
+            found = true
+        }
+    }
+
+    assert(found, "failed to find self in parent")
+
+    if len(node.parent.children) == 0 {
+        if (node.parent.parent == nil) {
+            // Reset the root node to be a leaf
+            node.parent.leaf = true
+        } else {
+            node.parent.Remove()
+        }
+    } else {
+        for curNode := node.parent; curNode != nil; curNode = curNode.parent {
+            curNode.bounds = MinBounds(curNode.children)
+        }
+    }
+}
+
 func (node *RTreeNode) AddChild(child *RTreeNode) {
     n := len(node.children)
     assert(n < cap(node.children), "extending full children array")
@@ -267,7 +298,7 @@ func (node *RTreeNode) Split(minFill, maxNodes int) *RTreeNode {
     return newNode
 }
 
-func (rtree *RTree) Insert(value interface{}, bounds Rect) {
+func (rtree *RTree) Insert(value interface{}, bounds Rect) *RTreeNode {
     newNode := newRTreeNode(rtree.maxNodes)
     newNode.value = value
     newNode.bounds = bounds
@@ -301,6 +332,8 @@ func (rtree *RTree) Insert(value interface{}, bounds Rect) {
         currentNode.bounds = MinBounds(currentNode.children)
         currentNode = currentNode.parent
     }
+
+    return newNode
 }
 
 /* Public interface */

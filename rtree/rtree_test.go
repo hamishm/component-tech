@@ -35,11 +35,14 @@ type Dummy struct {
 
 func TestRTree(t *testing.T) {
     tree := rtree.New(10, 4)
+
+    nodes := make([]*rtree.RTreeNode, 0, testCount)
     for n:= 0; n < testCount; n++ {
         bounds := randomRect()
         fmt.Println(bounds)
         dummy := &Dummy{A: 1}
-        tree.Insert(dummy, bounds)
+        node := tree.Insert(dummy, bounds)
+        nodes = append(nodes, node)
     }
 
     count := 0
@@ -51,4 +54,35 @@ func TestRTree(t *testing.T) {
     if count != testCount {
         t.Error("Failed to visit all nodes")
     }
+
+    for _, n := range nodes {
+        n.Remove()
+    }
+
+    count = 0
+    tree.VisitAll(func (value interface{}, bounds rtree.Rect) {
+        count++
+    })
+
+    if count != 0 {
+        t.Error("Failed to remove all nodes")
+    }
+
+    for n:= 0; n < testCount; n++ {
+        bounds := randomRect()
+        fmt.Println(bounds)
+        dummy := &Dummy{A: 1}
+        nodes[n] = tree.Insert(dummy, bounds)
+    }
+
+    count = 0
+    tree.VisitAll(func (value interface{}, bounds rtree.Rect) {
+        count++
+        //fmt.Println(value.(*Dummy).A)
+    })
+
+    if count != testCount {
+        t.Error("Failed to visit all nodes")
+    }
+
 }
