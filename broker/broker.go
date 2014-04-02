@@ -19,7 +19,9 @@ import (
 const MaxRTreeNodes = 50
 const MinFillRatio = 0.35
 const DefaultMapSize = 500
+const ConsumerQueueSize = 50
 const CoronerTimeout = time.Duration(1) * time.Minute
+const ConsumerKeepAliveInterval = time.Duration(20) * time.Second
 
 
 type Consumer struct {
@@ -34,7 +36,7 @@ type Consumer struct {
 
 func NewConsumer() *Consumer {
     consumer := new(Consumer)
-    consumer.MessageQueue = queue.NewListQueue()
+    consumer.MessageQueue = queue.NewChannelQueue(ConsumerQueueSize)
     consumer.InWait = false
     return consumer
 }
@@ -145,7 +147,25 @@ func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []by
 
     // Drop the lock while we poll the queue
     b.RWLock.RUnlock()
-    msgs := consumer.MessageQueue.Poll()
+
+    closeNotify := w.(http.CloseNotifier).CloseNotify()
+
+    var msgs []interface{}
+    for {
+        msgs = consumer.MessageQueue.Poll(ConsumerKeepAliveInterval)
+        if msgs != nil {
+            break
+        } else {
+            w.Write([]byte("\n"))
+            switch {
+            case <- closeNotify:
+                consumer.InWait = false
+                return
+            default:
+            }
+        }
+    }
+
     b.RWLock.RLock()
     defer b.RWLock.RUnlock()
 
