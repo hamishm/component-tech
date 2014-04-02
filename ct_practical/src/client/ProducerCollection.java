@@ -3,21 +3,24 @@ package client;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * Contains 100 producers and consumers.
- * This is so we don't overload the system 
- * with too many threads during testing
- *
- */
-public class ClientCollection extends Runner implements Iterable<Client>{
+public class ProducerCollection extends Runner {
 
-	private ArrayList<Client> collection = new ArrayList<Client>();
+	private ArrayList<Producer> collection = new ArrayList<Producer>();
 	
-	private void init(){
-		for(int i = 0; i < 100; i++){
+	public ProducerCollection(int numStill, int numMoving){
+		init(numStill, numMoving);
+	}
+	
+	public ProducerCollection(){
+		init(100,100);
+	}
+	
+	private void init(int numProducers, int numMovingProducers){
+		for(int i = 0; i < numProducers; i++){
 			addProducer();
-			//addMovingProducer();
-			addConsumer();
+		}
+		for(int i = 0; i < numMovingProducers; i++){
+			addMovingProducer();
 		}
 	}
 	
@@ -27,21 +30,24 @@ public class ClientCollection extends Runner implements Iterable<Client>{
 		}
 	}
 	
-	public void addProducer(){
+	public synchronized void addProducer(){
 		collection.add(new Producer());
 	}
 	
-	public void addMovingProducer(){
+	public synchronized void addMovingProducer(){
 		collection.add(new MovingProducer());
 	}
 	
-	public void addConsumer(){
-		collection.add(new Consumer());
-	}
 	
-	@Override
-	public Iterator<Client> iterator() {
-		return collection.iterator();
+	public synchronized void removeAllProducers(){
+		for(int i = 0; i < collection.size(); i++){
+			if(collection.get(i) instanceof Producer){
+				collection.remove(i);
+				i--;
+			}
+		}
+		for(int i = 0; i < collection.size(); i++){
+			assert !(collection.get(i) instanceof Producer);
+		}
 	}
-
 }

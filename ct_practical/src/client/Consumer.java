@@ -14,7 +14,7 @@ import dataTypes.Response;
 import dataTypes.SensorData;
 
 
-public class Consumer extends Client{
+public class Consumer extends Client {
 	private String consumerId = null;
 	
 	Location interestLoc = null;
@@ -63,7 +63,9 @@ public class Consumer extends Client{
 					JSONObject location = (JSONObject)object.get("location");
 					Location loc = new Location(location);
 					if(!TestTools.pointInBox(interestLoc, interestRadius, loc)){
-						System.err.println("Consumer " + name + " recieved unrequest location data.");
+						System.err.println("Consumer " + name + " recieved unrequest location data:");
+						System.err.println("Interest: " + interestLoc.toString() + " Radius: " + interestRadius);
+						System.err.println("Recieved: " + loc.toString());
 					}
 				}
 			}

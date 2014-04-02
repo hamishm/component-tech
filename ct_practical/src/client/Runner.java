@@ -1,46 +1,41 @@
 package client;
 
-import methods.Handshake;
-import tests.dataTypes.TestUtils;
 
 public abstract class Runner implements Runnable {
-
-	private Thread myThread = new Thread(this);
+	private Thread myThread = null;
 	private boolean running = false;
-	private int interval = 1000;
+	private int interval = 100;
 	
 	@Override
-	public void run() {
-		running = true;
+	public synchronized void run() {
 		while (running) {
 			try {
-				long start = System.currentTimeMillis();
+				this.wait(interval);
 				onTick();
-				myThread.sleep(interval - (System.currentTimeMillis() - start));
+				System.out.println("run in loop: "+this+Thread.currentThread().getName());
 			} catch (InterruptedException e) {
 				running = false;
-				myThread.interrupt();
-				myThread = null;
+				break;
 			}
 		}
 	}
 
-	public void start(){
+	public synchronized void start(){
 		if(myThread == null){
 			myThread = new Thread(this);
-			myThread.start();
 		}
+		running = true;
+		myThread.start();
 	}
 
-	public void stop() {
+	public synchronized void stop() {
 		if(running){
-			myThread.interrupt();
+			running = false;
+			this.notify();
 		}
 	}
 	
-	protected void onTick(){
-		
-	}
+	abstract void onTick();
 
 	public synchronized int getInterval() {
 		return interval;
@@ -52,6 +47,10 @@ public abstract class Runner implements Runnable {
 
 	public boolean isRunning() {
 		return running;
+	}
+	
+	public Thread getThread(){
+		return myThread;
 	}
 
 }

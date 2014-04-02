@@ -15,20 +15,20 @@ public class Producer extends Client {
 	}
 	
 	public void produce() {
-		handlePostData();
+		postData();
 	}
 
 	/**
 	 * Sends data if the producer has a session id and 
 	 * broker url
 	 */
-	private void handlePostData() {
+	protected void postData() {
 		if (brokerUrl != null && sessionId != null) {
 			Response r = PostSensorData.call(brokerUrl, sessionId, TestTools.getData(getLocation()));
 			if(r == null || r.code != 200){
 				System.err.println("Producer " + name + " Failed to get a response.");
 			} else {
-				
+				//success
 			}
 		}
 	}

@@ -59,20 +59,17 @@ public class TestTools {
 			double interestRadius, Location loc) {
 		double x = interestLoc.getLatitude() - interestRadius;
 		double y = interestLoc.getLongitude() - interestRadius;
-		if(loc.getLatitude() >= x && loc.getLatitude() <= (x+interestRadius)
-				&& loc.getLatitude() >= y && loc.getLongitude() <= (y+interestRadius))
+		if(loc.getLatitude() >= x && loc.getLatitude() <= (x+interestRadius*2)
+				&& loc.getLatitude() >= y && loc.getLongitude() <= (y+interestRadius*2))
 			return true;
 		return false;
 	}
 
-	/**
-	 * @return distance in m between 2 gps coordinates
-	 */
 	public static double distance(double[] p1, double[] p2){
-		double distGps = Math.sqrt(
+		double dist = Math.sqrt(
 				((p1[0]-p2[0])*(p1[0]-p2[0])) + 
 				(p1[1]-p2[1])*(p1[1]-p2[1]));
-		return distGps*62040.31672;//conversion factor to m
+		return dist;
 	}
 	
 	/**

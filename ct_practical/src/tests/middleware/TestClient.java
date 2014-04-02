@@ -2,14 +2,14 @@ package tests.middleware;
 
 import org.junit.Test;
 
-import client.ClientCollection;
+import client.ProducerCollection;
 import client.Consumer;
 
 public class TestClient {
 	
 	@Test
 	public void testClientCollection() throws InterruptedException {
-		ClientCollection c = new ClientCollection();
+		ProducerCollection c = new ProducerCollection();
 		c.start();
 		Thread.currentThread().sleep(1000);
 		c.stop();

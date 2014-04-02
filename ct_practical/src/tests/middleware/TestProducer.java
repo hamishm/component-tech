@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
 import client.MovingProducer;
-import client.ClientCollection;
+import client.ProducerCollection;
 import dataTypes.Location;
 
 public class TestProducer {
