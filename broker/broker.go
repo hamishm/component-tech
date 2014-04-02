@@ -185,11 +185,6 @@ func (b *Broker) handleConsume(w http.ResponseWriter, r *http.Request, body []by
 }
 
 
-func (b *Broker) handleRegProducer(w http.ResponseWriter, r *http.Request, body []byte) {
-    w.Write([]byte("Producer registration not used right now\n"))
-}
-
-
 type Location struct {
     Longitude float32 `json:"longitude"`
     Latitude  float32 `json:"latitude"`
@@ -206,13 +201,6 @@ type QueuedMessage struct {
 }
 
 func (b *Broker) handleProduce(w http.ResponseWriter, r *http.Request, body []byte) {
-    pathParts := strings.Split(r.URL.Path, "/")
-    if len(pathParts) != 3 {
-        http.Error(w, "Bad request for API", 400)
-        return
-    }
-    //producerID := pathParts[1]
-
     var msg ProducerMessage
     err := strict_json.Unmarshal(body, &msg)
     if err != nil {
@@ -253,11 +241,9 @@ func (b *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     switch {
     case r.Method == "POST" && r.URL.Path == "/consume":
         b.handleRegConsumer(w, r, bodyBytes)
-    case r.Method == "POST" && r.URL.Path == "/produce":
-        b.handleRegProducer(w, r, bodyBytes)
     case r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/consume/"):
         b.handleConsume(w, r, bodyBytes)
-    case r.Method == "POST" && strings.HasPrefix(r.URL.Path, "/produce/"):
+    case r.Method == "POST" && strings.HasPrefix(r.URL.Path, "/produce"):
         b.handleProduce(w, r, bodyBytes)
     default:
         http.Error(w, "Endpoint not found", 404)
