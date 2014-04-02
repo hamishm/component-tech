@@ -16,11 +16,6 @@ import client.Runner;
 public class TempTests {
 
 	
-	@Test
-	public void testSeveralProducersConsumers() throws InterruptedException{
-		
-	}
-	
 	/**
 	 * Starts up 20 consumers 
 	 * @throws InterruptedException
@@ -32,6 +27,7 @@ public class TempTests {
 		Thread.currentThread().sleep(1000); //time for them to register
 		ArrayList<ProducerCollection> producers = this.spinUpProducers(10000);
 		
+		//let 10 seconds of activity happen
 		Thread.currentThread().sleep(10000);
 		
 		for(Runner p : consumers){
@@ -62,6 +58,7 @@ public class TempTests {
 			group.add(new Consumer());
 		}
 		for(Consumer c : group){
+			c.setInterval(500);
 			c.start();
 			Thread.currentThread().sleep((int)Math.random()*100);
 		}
