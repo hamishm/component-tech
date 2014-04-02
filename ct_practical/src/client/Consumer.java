@@ -4,11 +4,15 @@ import methods.GetSensorData;
 import methods.Handshake;
 
 import org.joda.time.DateTime;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import dataTypes.Date;
 import dataTypes.Location;
 import dataTypes.Response;
 import dataTypes.SensorData;
+
 
 public class Consumer extends Client{
 	private String consumerId = null;
@@ -23,7 +27,7 @@ public class Consumer extends Client{
 		if(consumerId == null){
 			consumerId = Handshake.call(
 					this.brokerUrl, this.interestLoc, interestRadius);
-		}		
+		}
 		handleGetData();
 	}
 	
@@ -41,6 +45,19 @@ public class Consumer extends Client{
 			if(r == null || r.code != 200){
 				System.err.println("Consumer " + name + " Failed to get a response.");
 			} else {
+				JSONArray result = (JSONArray)JSONValue.parse(r.body);
+				for (Object obj : result) {
+					JSONObject object = (JSONObject)obj;
+					JSONObject location = (JSONObject)object.get("location");
+					double lon = ((Double)location.get("longitude")).doubleValue();
+					double lat = ((Double)location.get("latitude")).doubleValue();
+					if (lat < interestLoc.getLatitude() - interestRadius ||
+						    lat > interestLoc.getLatitude() + interestRadius ||
+						    lon < interestLoc.getLongitude() - interestRadius ||
+						    lon > interestLoc.getLongitude() + interestRadius) {
+						System.err.println("Consumer " + name + " received sensor data for wrong location");
+					}
+				}
 				System.out.println("Consumer " + name + " Success: " + r.body);
 			}
 		}
