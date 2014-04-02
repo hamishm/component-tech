@@ -109,7 +109,7 @@ type RTreeNode struct {
 }
 
 type RTree struct {
-    root     *RTreeNode
+    Root     *RTreeNode
     maxNodes int
     minFill  int
 }
@@ -308,7 +308,7 @@ func (rtree *RTree) Insert(value interface{}, bounds Rect) *RTreeNode {
     newNode.Bounds = bounds
     newNode.leaf = false
 
-    insertionNode := rtree.root.ChooseInsertionPoint(newNode)
+    insertionNode := rtree.Root.ChooseInsertionPoint(newNode)
     insertionNode.AddChild(newNode)
 
     currentNode := insertionNode
@@ -320,11 +320,11 @@ func (rtree *RTree) Insert(value interface{}, bounds Rect) *RTreeNode {
             currentNode.Parent.AddChild(splitNode)
             currentNode = currentNode.Parent
         } else {
-            rtree.root = newRTreeNode(rtree.maxNodes)
-            rtree.root.leaf = false
-            rtree.root.AddChild(currentNode)
-            rtree.root.AddChild(splitNode)
-            currentNode = rtree.root
+            rtree.Root = newRTreeNode(rtree.maxNodes)
+            rtree.Root.leaf = false
+            rtree.Root.AddChild(currentNode)
+            rtree.Root.AddChild(splitNode)
+            currentNode = rtree.Root
             assert(len(currentNode.children) <= rtree.maxNodes, "oops")
         }
     }
@@ -346,7 +346,7 @@ func New(maxNodes, minFill int) *RTree {
     root := newRTreeNode(maxNodes)
 
     return &RTree{
-        root:     root,
+        Root:     root,
         maxNodes: maxNodes,
         minFill:  minFill,
     }
@@ -367,7 +367,7 @@ func (rtree *RTree) Visit(x, y float32, cb func(value interface{}, bounds Rect))
         }
     }
 
-    recurse(rtree.root)
+    recurse(rtree.Root)
 }
 
 func (rtree *RTree) VisitAll(cb func(value interface{}, bounds Rect)) {
@@ -383,5 +383,5 @@ func (rtree *RTree) VisitAll(cb func(value interface{}, bounds Rect)) {
         }
     }
 
-    recurse(rtree.root)
+    recurse(rtree.Root)
 }
