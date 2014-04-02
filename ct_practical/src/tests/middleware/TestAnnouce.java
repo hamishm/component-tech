@@ -37,10 +37,11 @@ public class TestAnnouce {
 	
 	@Test
 	public void testAnnounceAsProducerWithBroker(){
-		Location l = TestTools.getRandomLocation(.1, .1);
+		Location l = new Location(5,5);
 		Response r = Annouce.callAsProducer(l);
 		JSONObject obj = (JSONObject) JSONValue.parse(r.body);
 		String url  = (String)obj.get("broker_url");
+		url = url.substring(url.indexOf("http://")+7,url.length()-1);
 		assertTrue(url != null);
 		Response r2 = PostSensorData.call(url, TestTools.getData(l));
 		assertTrue(r2!=null);

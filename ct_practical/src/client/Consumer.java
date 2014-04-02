@@ -54,7 +54,7 @@ public class Consumer extends Client {
 	 */
 	private int getData() {
 		int results = 0;
-		if (brokerUrl != null && sessionId != null && consumerId != null) {
+		if (brokerUrl != null && registryId != null && consumerId != null) {
 			Response r = GetSensorData.call(brokerUrl, consumerId);
 			if(r == null || r.code != 200){
 				System.err.println("Consumer " + name + " Failed to get a response.");

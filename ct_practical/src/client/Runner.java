@@ -12,7 +12,6 @@ public abstract class Runner implements Runnable {
 			try {
 				this.wait(interval);
 				onTick();
-				//System.out.println("run in loop: "+this+Thread.currentThread().getName());
 			} catch (InterruptedException e) {
 				running = false;
 				break;
