@@ -9,6 +9,8 @@ import (
     "io/ioutil"
     "math"
     "net/http"
+    "os"
+    "strconv"
     "strings"
     "sync"
     "time"
@@ -302,7 +304,13 @@ func (r *Registry) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+    port, err := strconv.Atoi(os.Args[1])
+    if err != nil {
+        fmt.Println(err.Error())
+        os.Exit(1)
+    }
+
     registry := NewRegistry()
     http.Handle("/", registry)
-    http.ListenAndServe(":80", nil)
+    http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }

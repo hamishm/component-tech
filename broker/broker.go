@@ -1,6 +1,7 @@
 package main
 
 import (
+    "bytes"
     "component-tech/queue"
     "component-tech/rtree"
     "component-tech/strict_json"
@@ -10,6 +11,8 @@ import (
     "fmt"
     "io/ioutil"
     "net/http"
+    "os"
+    "strconv"
     "strings"
     "sync"
     "time"
@@ -261,8 +264,49 @@ func (b *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func announceBroker(registryURL, myURL string) error {
+    msg := []byte(fmt.Sprintf(`{"url": "%s"}`, myURL))
+    reader := bytes.NewReader(msg)
+    announceBroker := fmt.Sprintf("%sannounce/broker", registryURL)
+
+    resp, err := http.Post(announceBroker, "application/json", reader)
+    if err != nil {
+        return err
+    }
+
+    contents, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return err
+    }
+
+    if string(contents) != "OK" {
+        return fmt.Errorf("Error, got: %s", string(contents))
+    }
+
+    fmt.Println(string(contents))
+
+    return nil
+}
+
 func main() {
     broker := NewBroker()
+
+    port, err := strconv.Atoi(os.Args[1])
+    if err != nil {
+        fmt.Println(err.Error())
+        os.Exit(1)
+    }
+
+    if len(os.Args) > 2 {
+        registryURL := os.Args[2]
+        myURL := os.Args[3]
+        err := announceBroker(registryURL, myURL)
+        if err != nil {
+            fmt.Println(err.Error())
+            os.Exit(1)
+        }
+    }
+
     http.Handle("/", broker)
-    http.ListenAndServe(":80", nil)
+    http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
