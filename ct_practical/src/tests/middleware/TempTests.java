@@ -29,10 +29,18 @@ public class TempTests {
 	
 	@Test
 	public void testSeveral() throws InterruptedException{
-		ClientCollection cc = new ClientCollection();
-		cc.staggerStart();
+		ArrayList<ClientCollection> group = new ArrayList<ClientCollection>();
+		for(int i = 0; i < 20; i++){
+			group.add(new ClientCollection());
+		}
+		for(ClientCollection cc : group){
+			cc.start();
+			Thread.currentThread().sleep((long) (Math.random()*100));
+		}
 		Thread.currentThread().sleep(10000);
-		cc.stopAll();
+		for(ClientCollection cc : group){
+			cc.stop();
+		}
 	}
 	
 	class SimpleConsumer implements Runnable {

@@ -7,7 +7,7 @@ import org.json.simple.JSONValue;
 
 import dataTypes.Location;
 
-public abstract class Client extends Runner implements Runnable{
+public abstract class Client {
 	protected Location location = null;
 	
 	private double lastRegistered = 0.0;

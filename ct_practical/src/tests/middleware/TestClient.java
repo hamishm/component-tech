@@ -10,15 +10,15 @@ public class TestClient {
 	@Test
 	public void testClientCollection() throws InterruptedException {
 		ClientCollection c = new ClientCollection();
-		c.staggerStart();
+		c.start();
 		Thread.currentThread().sleep(1000);
-		c.stopAll();
+		c.stop();
 	}
 	
 	public void testConsumer() throws InterruptedException{
 		Consumer c = new Consumer();
-		c.start();
-		Thread.currentThread().sleep(5000);
-		c.stop();
+		c.consume();
+		c.consume();
+		c.consume();
 	}
 }

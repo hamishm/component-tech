@@ -37,6 +37,14 @@ public class Location implements JsonObject{
 		return this.longitude;
 	}
 
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
+	}
+
 	@Override
 	public void load(JSONObject obj) {
 		double olatitude = ((Number)obj.get("latitude")).doubleValue();

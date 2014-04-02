@@ -1,10 +1,15 @@
 package client;
 
 import methods.PostSensorData;
+import dataTypes.Location;
 import dataTypes.Response;
 
 public class Producer extends Client {
 
+	public Producer(Location loc){
+		super(loc);
+	}
+	
 	public Producer(){
 		super(TestTools.getRandomLocation());
 	}
